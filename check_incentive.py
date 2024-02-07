@@ -1,8 +1,8 @@
 import bittensor as bt
-subtensor = bt.subtensor(network="ws://37.27.53.131:9944")
+subtensor = bt.subtensor(network="ws://1.2.3.4:9944")
 
 subnet_id = 13
-wallet_hotkey = "5D9v2GHS3qDwvGwBRoY2cNbYbhU2PFNPrkNhiQX9hJStZ1yn"
+wallet_hotkey = "blahblah"
 
 # Returns the current percent emissions of the given subnet.
 def get_subnet_weight(subnet_id):

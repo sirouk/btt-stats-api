@@ -1,5 +1,5 @@
 import bittensor as bt
-subtensor = bt.subtensor(network="ws://1.2.3.4:9944")
+subtensor = bt.subtensor(network="ws://your.machine.ip.add:9944")
 
 subnet_id = 13
 wallet_hotkey = "blahblah"

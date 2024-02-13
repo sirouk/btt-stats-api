@@ -8,6 +8,7 @@ from io import StringIO
 import bittensor as bt
 
 PORT = 41337
+subtensor_address = "1.2.3.4:9944"
 
 
 class Server(socketserver.TCPServer):
@@ -32,7 +33,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
         output = ""
         if path == '/subnet-list':
             # Run the subnet list command
-            command = "/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://37.27.53.131:9944"
+            command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{}"
             child = pexpect.spawn(command, dimensions=(500, 500))
             child.expect(pexpect.EOF)
             cmd_output = child.before.decode()
@@ -43,7 +44,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             lines[0] += "  WEIGHT"
 
             # connect to the subtensor chain
-            subtensor = bt.subtensor(network="ws://37.27.53.131:9944")
+            subtensor = bt.subtensor(network=f"ws://{}")
 
             #  for each line, take the first column and look up the subnet emission, using the key as the index
             for i, line in enumerate(lines):
@@ -67,7 +68,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             for netuid in netuids:
                 lines = []
                 if re.match(r'^\d+$', netuid):
-                    command = f"/usr/local/bin/btcli s metagraph --netuid={netuid} --subtensor.chain_endpoint ws://37.27.53.131:9944"
+                    command = f"/usr/local/bin/btcli s metagraph --netuid={netuid} --subtensor.chain_endpoint ws://{}"
                     child = pexpect.spawn(command, dimensions=(500, 500))
                     child.expect(pexpect.EOF)
                     netuid_output = child.before.decode()

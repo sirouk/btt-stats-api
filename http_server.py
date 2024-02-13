@@ -3,6 +3,8 @@ import socketserver
 from urllib.parse import urlparse, parse_qs
 import pexpect
 import re
+import subprocess
+subprocess.run(["python3", "-m", "pip", "install", "pandas"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 import pandas as pd
 from io import StringIO
 import bittensor as bt

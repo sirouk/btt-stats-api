@@ -9,7 +9,7 @@ source ~/.bashrc
 
 cd ~
 git clone https://github.com/sirouk/btt-stats-api
-cd btt-miner-shield
+cd ~/btt-stats-api
 pm2 start http_server.py --name btt-stats-api --interpreter python3
 ```
 

@@ -1,5 +1,18 @@
 # btt-stats-spi
 
+## Installation:
+```bash
+ufw allow 41337/tcp
+
+python3 -m pip install bittensor --upgrade
+source ~/.bashrc
+
+cd ~
+git clone https://github.com/sirouk/btt-stats-api
+cd btt-miner-shield
+pm2 start http_server.py --name btt-stats-api --interpreter python3
+```
+
 # Fetch Subnets:
 ```bash
 http://your.machine.ip.add:41337/subnet-list

@@ -8,7 +8,7 @@ from io import StringIO
 import bittensor as bt
 
 PORT = 41337
-subtensor_address = "1.2.3.4:9944"
+subtensor_address = "127.0.0.1:9944"
 
 
 class Server(socketserver.TCPServer):

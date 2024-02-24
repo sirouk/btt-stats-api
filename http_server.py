@@ -18,7 +18,7 @@ class Server(socketserver.TCPServer):
 
 
 def clean_chars(str_data):
-    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])|τ')
     return ansi_escape.sub('', str_data)
 
 
@@ -33,7 +33,22 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
         query_params = parse_qs(parsed_url.query)
 
         output = ""
-        if path == '/subnet-list':
+
+        if path == '/wallet-balance':
+            # Run the subnet list command
+            command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --subtensor.chain_endpoint ws://{subtensor_address}"
+            child = pexpect.spawn(command, dimensions=(500, 500))
+            child.expect(pexpect.EOF)
+            cmd_output = child.before.decode()
+            cmd_output = clean_chars(cmd_output)
+            lines = cmd_output.splitlines()[1:-1]
+
+            cmd_output = '\n'.join(lines)
+            string_io_obj = StringIO(cmd_output)
+            df = pd.read_fwf(string_io_obj, colspecs='infer')
+            output += df.to_csv(index=False)
+
+        elif path == '/subnet-list':
             # Run the subnet list command
             command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{subtensor_address}"
             child = pexpect.spawn(command, dimensions=(500, 500))

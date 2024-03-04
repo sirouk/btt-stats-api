@@ -8,6 +8,8 @@ subprocess.run(["python3", "-m", "pip", "install", "pandas"], stdout=subprocess.
 import pandas as pd
 from io import StringIO
 import bittensor as bt
+from datetime import datetime
+import os
 
 PORT = 41337
 subtensor_address = "127.0.0.1:9944"
@@ -108,6 +110,56 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
 
                 # Convert DataFrame to CSV string
                 output += df.to_csv(index=False)
+
+        elif path == '/registrations':
+
+            unique_entries = []
+            log_pattern = re.compile(r'btt_register_sn(\d+)_ck(\d+)-hk(\d+)(?:_\d{4}-\d{2}-\d{2})?\.log')
+            log_directory = os.path.expanduser("~/logs/bittensor")
+
+            for filename in os.listdir(log_directory):
+                match = log_pattern.match(filename)
+                if match:
+                    subnet, coldkey, hotkey = match.groups()
+                    filepath = os.path.join(log_directory, filename)
+                    
+                    with open(filepath, 'r', encoding='utf-8') as file:
+                        lines = file.readlines()
+
+                        for i, line in enumerate(lines):
+                            if '[32mRegistered' in line:
+                                for j in range(i-1, -1, -1):
+                                    if "The cost to register" in lines[j]:
+                                        cost_line = lines[j]
+                                        break
+                                else:
+                                    cost_line = "Cost not found"
+
+                                cost_match = re.search(r'τ([\d.]+)', cost_line)
+                                cost = cost_match.group(1) if cost_match else "N/A"
+
+                                if cost:
+                                    file_stats = os.stat(filepath)
+                                    modified_time = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                                    base_filename = os.path.basename(filepath)
+
+                                    new_entry = {
+                                        'Subnet': subnet, 
+                                        'ColdKey': coldkey, 
+                                        'HotKey': hotkey,
+                                        'Cost': cost, 
+                                        'Line': i + 1, 
+                                        'ModifiedTime': modified_time,
+                                        'Filename': base_filename
+                                    }
+                                    unique_entries.append(new_entry)
+
+            df = pd.DataFrame(unique_entries)  # Create DataFrame directly from the list of dictionaries
+
+            df = df.sort_values(by=['Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[True, True, True, False])
+
+            # Convert DataFrame to CSV string
+            output += df.to_csv(index=False)
 
         else:
             self.send_error(404, "File not found")

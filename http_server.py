@@ -24,6 +24,16 @@ def clean_chars(str_data):
     return ansi_escape.sub('', str_data)
 
 
+def trim_output_from_pattern(output, start_pattern):
+    """Trim the output starting from the line that contains the start_pattern."""
+    lines = output.splitlines()
+    for i, line in enumerate(lines):
+        # trim the line for whitespace and check to see if the start_pattern matches the start of the line for the same length
+        if len(start_pattern) > 0 and line.strip()[:len(start_pattern)] == start_pattern:
+            return '\n'.join(lines[i:])
+    return ''  # Return an empty string if the pattern is not found
+
+
 def get_subnet_weight(subnet_id, subtensor):
     return float(subtensor.get_emission_value_by_subnet(netuid=subnet_id))
 
@@ -43,6 +53,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             child.expect(pexpect.EOF)
             cmd_output = child.before.decode()
             cmd_output = clean_chars(cmd_output)
+            cmd_output = trim_output_from_pattern(cmd_output, "Wallet Coldkey Balances")
             lines = cmd_output.splitlines()[1:-1]
 
             cmd_output = '\n'.join(lines)
@@ -57,6 +68,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             child.expect(pexpect.EOF)
             cmd_output = child.before.decode()
             cmd_output = clean_chars(cmd_output)
+            cmd_output = trim_output_from_pattern(cmd_output, "Subnets")
             lines = cmd_output.splitlines()[1:-1]
 
             # add a column to the end of the first line
@@ -92,6 +104,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
                     child.expect(pexpect.EOF)
                     netuid_output = child.before.decode()
                     netuid_output = clean_chars(netuid_output)
+                    netuid_output = trim_output_from_pattern(netuid_output, "Metagraph")
 
                     netuid_lines = netuid_output.splitlines()
                     for line in netuid_lines:
@@ -156,7 +169,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
 
             df = pd.DataFrame(unique_entries)  # Create DataFrame directly from the list of dictionaries
 
-            df = df.sort_values(by=['Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[True, True, True, False])
+            df = df.sort_values(by=['ModifiedTime', 'Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[False, True, True, True, False])
 
             # Convert DataFrame to CSV string
             output += df.to_csv(index=False)

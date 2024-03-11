@@ -51,7 +51,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --subtensor.chain_endpoint ws://{subtensor_address}"
             child = pexpect.spawn(command, dimensions=(500, 500))
             child.expect(pexpect.EOF)
-            cmd_output = child.before.decode()
+            cmd_output = child.before.decode(errors='ignore')
             cmd_output = clean_chars(cmd_output)
             cmd_output = trim_output_from_pattern(cmd_output, "Wallet Coldkey Balances")
             lines = cmd_output.splitlines()[1:-1]
@@ -66,7 +66,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{subtensor_address}"
             child = pexpect.spawn(command, dimensions=(500, 500))
             child.expect(pexpect.EOF)
-            cmd_output = child.before.decode()
+            cmd_output = child.before.decode(errors='ignore')
             cmd_output = clean_chars(cmd_output)
             cmd_output = trim_output_from_pattern(cmd_output, "Subnets")
             lines = cmd_output.splitlines()[1:-1]
@@ -102,7 +102,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
                     command = f"/usr/local/bin/btcli s metagraph --netuid={netuid} --subtensor.chain_endpoint ws://{subtensor_address}"
                     child = pexpect.spawn(command, dimensions=(500, 500))
                     child.expect(pexpect.EOF)
-                    netuid_output = child.before.decode()
+                    netuid_output = child.before.decode(errors='ignore')
                     netuid_output = clean_chars(netuid_output)
                     netuid_output = trim_output_from_pattern(netuid_output, "Metagraph")
 
@@ -129,6 +129,8 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             unique_entries = []
             log_pattern = re.compile(r'btt_register_sn(\d+)_ck(\d+)-hk(\d+)(?:_\d{4}-\d{2}-\d{2})?\.log')
             log_directory = os.path.expanduser("~/logs/bittensor")
+            timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| \{Attempting SN registration')
+
 
             for filename in os.listdir(log_directory):
                 match = log_pattern.match(filename)
@@ -136,40 +138,45 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
                     subnet, coldkey, hotkey = match.groups()
                     filepath = os.path.join(log_directory, filename)
                     
-                    with open(filepath, 'r', encoding='utf-8') as file:
+                    with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
                         lines = file.readlines()
 
-                        for i, line in enumerate(lines):
-                            if '[32mRegistered' in line:
-                                for j in range(i-1, -1, -1):
-                                    if "The cost to register" in lines[j]:
-                                        cost_line = lines[j]
+                    for i, line in enumerate(lines):
+                        if '[32mRegistered' in line:
+
+                            timestamp = None
+                            cost = "N/A"
+
+                            # Search backwards for cost and timestamp
+                            for j in range(i-1, -1, -1):
+                                if not timestamp:
+                                    timestamp_match = timestamp_pattern.search(lines[j])
+                                    if timestamp_match:
+                                        timestamp = timestamp_match.group(1)
+                                if "to register on subnet:" in lines[j]:
+                                    cost_match = re.search(r'τ([\d.]+)', lines[j])
+                                    if cost_match:
+                                        cost = cost_match.group(1)
                                         break
-                                else:
-                                    cost_line = "Cost not found"
 
-                                cost_match = re.search(r'τ([\d.]+)', cost_line)
-                                cost = cost_match.group(1) if cost_match else "N/A"
+                            file_stats = os.stat(filepath)
+                            modified_time = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+                            base_filename = os.path.basename(filepath)
 
-                                if cost:
-                                    file_stats = os.stat(filepath)
-                                    modified_time = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
-                                    base_filename = os.path.basename(filepath)
-
-                                    new_entry = {
-                                        'Subnet': subnet, 
-                                        'ColdKey': coldkey, 
-                                        'HotKey': hotkey,
-                                        'Cost': cost, 
-                                        'Line': i + 1, 
-                                        'ModifiedTime': modified_time,
-                                        'Filename': base_filename
-                                    }
-                                    unique_entries.append(new_entry)
+                            new_entry = {
+                                'Subnet': subnet, 
+                                'ColdKey': coldkey, 
+                                'HotKey': hotkey,
+                                'Cost': cost, 
+                                'Line': str(i + 1), 
+                                'Timestamp': timestamp or modified_time,  # Use discovered timestamp or file modified time
+                                'Filename': base_filename
+                            }
+                            unique_entries.append(new_entry)
 
             df = pd.DataFrame(unique_entries)  # Create DataFrame directly from the list of dictionaries
 
-            df = df.sort_values(by=['ModifiedTime', 'Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[False, True, True, True, False])
+            df = df.sort_values(by=['Timestamp', 'Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[False, True, True, True, False])
 
             # Convert DataFrame to CSV string
             output += df.to_csv(index=False)

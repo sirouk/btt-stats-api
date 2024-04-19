@@ -1,0 +1,1 @@
+spawn /usr/local/bin/btcli stake remove --amount 7.16099 --wallet.name coldkey-01 --wallet.hotkey hotkey-04 --subtensor.network local --subtensor.chain_endpoint ws://127.0.0.1:9944

@@ -1,0 +1,346 @@
+spawn /usr/local/bin/btcli stake remove --amount 7.51926 --wallet.name coldkey-01 --wallet.hotkey hotkey-07 --subtensor.network local --subtensor.chain_endpoint ws://127.0.0.1:9944
+spawn /usr/local/bin/btcli stake remove --amount 0.11537 --wallet.name coldkey-01 --wallet.hotkey hotkey-07 --subtensor.network local --subtensor.chain_endpoint ws://127.0.0.1:9944
+  0%|                                                                                                        | 0/1 [00:00<?, ?it/s][0m100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.21it/s][0m[0m100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.21it/s][0m
+Do you want to unstake from the following keys to coldkey-01:
+    [1;37m- hotkey-07:5CfgFFCPk5eFPoiLFkG4CGGRsZ9NjqyiAyYsnqgu877bzpMH: 0.11537 τ[0m
+ [1;35m[y/n][0m: [0m[0my
+Enter password to unlock key: 
+[?25l[0m[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...
+[?25h[1A[2K[0m[?25l[0m[32m⠋[0m 📡 Syncing with chain: [37mlocal[0m ...
+[?25h[1A[2K[0mDo you want to unstake:
+[1;37m  amount: τ0.115370000[0m
+[1;37m  hotkey: hotkey-07[0m? [1;35m[y/n][0m: [0my
+[?25l[0m{'code': 1014, 'message': 'Priority is too low: (18446744073709551615 vs 18446744073709551615)', 'data': 'The transaction has too 
+low priority to replace another transaction already in the pool.'}, retrying in 2 seconds...
+[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K{'code': 1014, 'message': 'Priority is too low: (18446744073709551615 vs 18446744073709551615)', 'data': 'The transaction has too 
+low priority to replace another transaction already in the pool.'}, retrying in 4 seconds...
+[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...
+[?25h[1A[2K[0m[31m╭─[0m[31m──────────────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m───────────────────────────────[0m[31m─╮[0m
+[31m│[0m [2;33m/usr/local/bin/[0m[1;33mbtcli[0m:[94m32[0m in [92m<module>[0m                                                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m29 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m30 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m31 [0m[94mif[0m [91m__name__[0m == [33m'[0m[33m__main__[0m[33m'[0m:                                                                  [31m│[0m
+[31m│[0m [31m❱ [0m32 [2m│   [0mmain()                                                                                  [31m│[0m
+[31m│[0m   [2m33 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m34 [0m[2m# The MIT License (MIT)[0m                                                                     [31m│[0m
+[31m│[0m   [2m35 [0m[2m# Copyright © 2021 Yuma Rao[0m                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/bin/[0m[1;33mbtcli[0m:[94m22[0m in [92mmain[0m                                                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m19 [0m[2m│   [0m                                                                                        [31m│[0m
+[31m│[0m   [2m20 [0m[2m│   [0m[94mtry[0m:                                                                                    [31m│[0m
+[31m│[0m   [2m21 [0m[2m│   │   [0mcli_instance = btcli(args=sys.argv[[94m1[0m:])                                             [31m│[0m
+[31m│[0m [31m❱ [0m22 [2m│   │   [0mcli_instance.run()                                                                  [31m│[0m
+[31m│[0m   [2m23 [0m[2m│   [0m[94mexcept[0m [96mKeyboardInterrupt[0m:                                                               [31m│[0m
+[31m│[0m   [2m24 [0m[2m│   │   [0m[96mprint[0m([33m'[0m[33mKeyboardInterrupt[0m[33m'[0m)                                                          [31m│[0m
+[31m│[0m   [2m25 [0m[2m│   [0m[94mexcept[0m [96mRuntimeError[0m [94mas[0m e:                                                               [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33mcli.py[0m:[94m363[0m in [92mrun[0m                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m360 [0m[2m│   │   │   [0mcommand_data = COMMANDS[command]                                               [31m│[0m
+[31m│[0m   [2m361 [0m[2m│   │   │   [0m                                                                               [31m│[0m
+[31m│[0m   [2m362 [0m[2m│   │   │   [0m[94mif[0m [96misinstance[0m(command_data, [96mdict[0m):                                             [31m│[0m
+[31m│[0m [31m❱ [0m363 [2m│   │   │   │   [0mcommand_data[[33m"[0m[33mcommands[0m[33m"[0m][[96mself[0m.config[[33m"[0m[33msubcommand[0m[33m"[0m]].run([96mself[0m)              [31m│[0m
+[31m│[0m   [2m364 [0m[2m│   │   │   [0m[94melse[0m:                                                                          [31m│[0m
+[31m│[0m   [2m365 [0m[2m│   │   │   │   [0mcommand_data.run([96mself[0m)                                                     [31m│[0m
+[31m│[0m   [2m366 [0m[2m│   │   [0m[94melse[0m:                                                                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/commands/[0m[1;33munstake.py[0m:[94m160[0m in [92mrun[0m                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m157 [0m[2m│   │   │   [0msubtensor: [33m"[0m[33mbittensor.subtensor[0m[33m"[0m = bittensor.subtensor(                        [31m│[0m
+[31m│[0m   [2m158 [0m[2m│   │   │   │   [0mconfig=config, log_verbose=[94mFalse[0m                                           [31m│[0m
+[31m│[0m   [2m159 [0m[2m│   │   │   [0m)                                                                              [31m│[0m
+[31m│[0m [31m❱ [0m160 [2m│   │   │   [0mUnStakeCommand._run(cli, subtensor)                                            [31m│[0m
+[31m│[0m   [2m161 [0m[2m│   │   [0m[94mfinally[0m:                                                                           [31m│[0m
+[31m│[0m   [2m162 [0m[2m│   │   │   [0m[94mif[0m [33m"[0m[33msubtensor[0m[33m"[0m [95min[0m [96mlocals[0m():                                                    [31m│[0m
+[31m│[0m   [2m163 [0m[2m│   │   │   │   [0msubtensor.close()                                                          [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/commands/[0m[1;33munstake.py[0m:[94m281[0m in [92m_run[0m                [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m278 [0m[2m│   │   [0m                                                                                   [31m│[0m
+[31m│[0m   [2m279 [0m[2m│   │   [0m[94mif[0m [96mlen[0m(final_hotkeys) == [94m1[0m:                                                        [31m│[0m
+[31m│[0m   [2m280 [0m[2m│   │   │   [0m[2m# do regular unstake[0m                                                           [31m│[0m
+[31m│[0m [31m❱ [0m281 [2m│   │   │   [0m[94mreturn[0m subtensor.unstake(                                                      [31m│[0m
+[31m│[0m   [2m282 [0m[2m│   │   │   │   [0mwallet=wallet,                                                             [31m│[0m
+[31m│[0m   [2m283 [0m[2m│   │   │   │   [0mhotkey_ss58=final_hotkeys[[94m0[0m][[94m1[0m],                                           [31m│[0m
+[31m│[0m   [2m284 [0m[2m│   │   │   │   [0mamount=[94mNone[0m [94mif[0m cli.config.get([33m"[0m[33munstake_all[0m[33m"[0m) [94melse[0m final_amounts[[94m0[0m],        [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1759[0m in [92munstake[0m                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1756 [0m[2;33m│   │   [0m[33mThis function supports flexible stake management, allowing neurons to adjust the[0m  [31m│[0m
+[31m│[0m   [2m1757 [0m[2;33m│   │   [0m[33mand potential reward accruals.[0m                                                    [31m│[0m
+[31m│[0m   [2m1758 [0m[2;33m│   │   [0m[33m"""[0m                                                                               [31m│[0m
+[31m│[0m [31m❱ [0m1759 [2m│   │   [0m[94mreturn[0m unstake_extrinsic(                                                         [31m│[0m
+[31m│[0m   [2m1760 [0m[2m│   │   │   [0m[96mself[0m,                                                                         [31m│[0m
+[31m│[0m   [2m1761 [0m[2m│   │   │   [0mwallet,                                                                       [31m│[0m
+[31m│[0m   [2m1762 [0m[2m│   │   │   [0mhotkey_ss58,                                                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/extrinsics/[0m[1;33munstaking.py[0m:[94m152[0m in                 [31m│[0m
+[31m│[0m [92munstake_extrinsic[0m                                                                                [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m149 [0m[2m│   │   │   │   [0msubtensor.network                                                          [31m│[0m
+[31m│[0m   [2m150 [0m[2m│   │   │   [0m)                                                                              [31m│[0m
+[31m│[0m   [2m151 [0m[2m│   │   [0m):                                                                                 [31m│[0m
+[31m│[0m [31m❱ [0m152 [2m│   │   │   [0mstaking_response: [96mbool[0m = __do_remove_stake_single(                             [31m│[0m
+[31m│[0m   [2m153 [0m[2m│   │   │   │   [0msubtensor=subtensor,                                                       [31m│[0m
+[31m│[0m   [2m154 [0m[2m│   │   │   │   [0mwallet=wallet,                                                             [31m│[0m
+[31m│[0m   [2m155 [0m[2m│   │   │   │   [0mhotkey_ss58=hotkey_ss58,                                                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/extrinsics/[0m[1;33munstaking.py[0m:[94m63[0m in                  [31m│[0m
+[31m│[0m [92m__do_remove_stake_single[0m                                                                         [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 60 [0m[2m│   [0m[2m# Decrypt keys,[0m                                                                        [31m│[0m
+[31m│[0m   [2m 61 [0m[2m│   [0mwallet.coldkey                                                                         [31m│[0m
+[31m│[0m   [2m 62 [0m[2m│   [0m                                                                                       [31m│[0m
+[31m│[0m [31m❱ [0m 63 [2m│   [0msuccess = subtensor._do_unstake(                                                       [31m│[0m
+[31m│[0m   [2m 64 [0m[2m│   │   [0mwallet=wallet,                                                                     [31m│[0m
+[31m│[0m   [2m 65 [0m[2m│   │   [0mhotkey_ss58=hotkey_ss58,                                                           [31m│[0m
+[31m│[0m   [2m 66 [0m[2m│   │   [0mamount=amount,                                                                     [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1817[0m in [92m_do_unstake[0m               [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1814 [0m[2m│   │   │   │   [0m[94melse[0m:                                                                     [31m│[0m
+[31m│[0m   [2m1815 [0m[2m│   │   │   │   │   [0m[94mraise[0m StakeError(response.error_message)                              [31m│[0m
+[31m│[0m   [2m1816 [0m[2m│   │   [0m                                                                                  [31m│[0m
+[31m│[0m [31m❱ [0m1817 [2m│   │   [0m[94mreturn[0m make_substrate_call_with_retry()                                           [31m│[0m
+[31m│[0m   [2m1818 [0m[2m│   [0m                                                                                      [31m│[0m
+[31m│[0m   [2m1819 [0m[2m│   [0m[2m################[0m                                                                      [31m│[0m
+[31m│[0m   [2m1820 [0m[2m│   [0m[2m#### Senate ####[0m                                                                      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/[0m[1;33mdecorator.py[0m:[94m232[0m in [92mfun[0m                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m229 [0m[2m│   │   [0m[94mdef[0m [92mfun[0m(*args, **kw):                                                              [31m│[0m
+[31m│[0m   [2m230 [0m[2m│   │   │   [0m[94mif[0m [95mnot[0m kwsyntax:                                                               [31m│[0m
+[31m│[0m   [2m231 [0m[2m│   │   │   │   [0margs, kw = fix(args, kw, sig)                                              [31m│[0m
+[31m│[0m [31m❱ [0m232 [2m│   │   │   [0m[94mreturn[0m caller(func, *(extras + args), **kw)                                    [31m│[0m
+[31m│[0m   [2m233 [0m[2m│   [0mfun.[91m__name__[0m = func.[91m__name__[0m                                                           [31m│[0m
+[31m│[0m   [2m234 [0m[2m│   [0mfun.[91m__doc__[0m = func.[91m__doc__[0m                                                             [31m│[0m
+[31m│[0m   [2m235 [0m[2m│   [0mfun.__wrapped__ = func                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/retry/[0m[1;33mapi.py[0m:[94m73[0m in [92mretry_decorator[0m                       [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 70 [0m[2m│   [0m[94mdef[0m [92mretry_decorator[0m(f, *fargs, **fkwargs):                                             [31m│[0m
+[31m│[0m   [2m 71 [0m[2m│   │   [0margs = fargs [94mif[0m fargs [94melse[0m [96mlist[0m()                                                  [31m│[0m
+[31m│[0m   [2m 72 [0m[2m│   │   [0mkwargs = fkwargs [94mif[0m fkwargs [94melse[0m [96mdict[0m()                                            [31m│[0m
+[31m│[0m [31m❱ [0m 73 [2m│   │   [0m[94mreturn[0m __retry_internal(partial(f, *args, **kwargs), exceptions, tries, delay, m   [31m│[0m
+[31m│[0m   [2m 74 [0m[2m│   │   │   │   │   │   │   │   [0mlogger)                                                    [31m│[0m
+[31m│[0m   [2m 75 [0m[2m│   [0m                                                                                       [31m│[0m
+[31m│[0m   [2m 76 [0m[2m│   [0m[94mreturn[0m retry_decorator                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/retry/[0m[1;33mapi.py[0m:[94m33[0m in [92m__retry_internal[0m                      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 30 [0m[2m│   [0m_tries, _delay = tries, delay                                                          [31m│[0m
+[31m│[0m   [2m 31 [0m[2m│   [0m[94mwhile[0m _tries:                                                                          [31m│[0m
+[31m│[0m   [2m 32 [0m[2m│   │   [0m[94mtry[0m:                                                                               [31m│[0m
+[31m│[0m [31m❱ [0m 33 [2m│   │   │   [0m[94mreturn[0m f()                                                                     [31m│[0m
+[31m│[0m   [2m 34 [0m[2m│   │   [0m[94mexcept[0m exceptions [94mas[0m e:                                                            [31m│[0m
+[31m│[0m   [2m 35 [0m[2m│   │   │   [0m_tries -= [94m1[0m                                                                    [31m│[0m
+[31m│[0m   [2m 36 [0m[2m│   │   │   [0m[94mif[0m [95mnot[0m _tries:                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1802[0m in                           [31m│[0m
+[31m│[0m [92mmake_substrate_call_with_retry[0m                                                                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1799 [0m[2m│   │   │   │   [0mextrinsic = substrate.create_signed_extrinsic(                            [31m│[0m
+[31m│[0m   [2m1800 [0m[2m│   │   │   │   │   [0mcall=call, keypair=wallet.coldkey                                     [31m│[0m
+[31m│[0m   [2m1801 [0m[2m│   │   │   │   [0m)                                                                         [31m│[0m
+[31m│[0m [31m❱ [0m1802 [2m│   │   │   │   [0mresponse = substrate.submit_extrinsic(                                    [31m│[0m
+[31m│[0m   [2m1803 [0m[2m│   │   │   │   │   [0mextrinsic,                                                            [31m│[0m
+[31m│[0m   [2m1804 [0m[2m│   │   │   │   │   [0mwait_for_inclusion=wait_for_inclusion,                                [31m│[0m
+[31m│[0m   [2m1805 [0m[2m│   │   │   │   │   [0mwait_for_finalization=wait_for_finalization,                          [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/substrateinterface/[0m[1;33mbase.py[0m:[94m1788[0m in [92msubmit_extrinsic[0m      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1785 [0m[2m│   │   │   │   │   [0m}                                                                     [31m│[0m
+[31m│[0m   [2m1786 [0m[2m│   │   [0m                                                                                  [31m│[0m
+[31m│[0m   [2m1787 [0m[2m│   │   [0m[94mif[0m wait_for_inclusion [95mor[0m wait_for_finalization:                                   [31m│[0m
+[31m│[0m [31m❱ [0m1788 [2m│   │   │   [0mresponse = [96mself[0m.rpc_request(                                                  [31m│[0m
+[31m│[0m   [2m1789 [0m[2m│   │   │   │   [0m[33m"[0m[33mauthor_submitAndWatchExtrinsic[0m[33m"[0m,                                         [31m│[0m
+[31m│[0m   [2m1790 [0m[2m│   │   │   │   [0m[[96mstr[0m(extrinsic.data)],                                                    [31m│[0m
+[31m│[0m   [2m1791 [0m[2m│   │   │   │   [0mresult_handler=result_handler                                             [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/substrateinterface/[0m[1;33mbase.py[0m:[94m299[0m in [92mrpc_request[0m            [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 296 [0m[2m│   │   │   │   │   │   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 297 [0m[2m│   │   │   │   │   │   [0m[2m# Check if response has error[0m                                     [31m│[0m
+[31m│[0m   [2m 298 [0m[2m│   │   │   │   │   │   [0m[94mif[0m [33m'[0m[33merror[0m[33m'[0m [95min[0m message:                                            [31m│[0m
+[31m│[0m [31m❱ [0m 299 [2m│   │   │   │   │   │   │   [0m[94mraise[0m SubstrateRequestException(message[[33m'[0m[33merror[0m[33m'[0m])             [31m│[0m
+[31m│[0m   [2m 300 [0m[2m│   │   │   │   │   │   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 301 [0m[2m│   │   │   │   │   │   [0m[2m# If result handler is set, pass result through and loop until h[0m  [31m│[0m
+[31m│[0m   [2m 302 [0m[2m│   │   │   │   │   │   [0m[94mif[0m [96mcallable[0m(result_handler):                                      [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+[1;91mSubstrateRequestException: [0m[1m{[0m[32m'code'[0m: [1;36m1014[0m, [32m'message'[0m: [32m'Priority is too low: [0m[32m([0m[32m18446744073709551615 vs 18446744073709551615[0m[32m)[0m[32m'[0m, [32m'data'[0m:
+[32m'The transaction has too low priority to replace another transaction already in the pool.'[0m[1m}[0m
+[0m[0mspawn /usr/local/bin/btcli stake remove --amount 0.11537 --wallet.name coldkey-01 --wallet.hotkey hotkey-07 --subtensor.network local --subtensor.chain_endpoint ws://127.0.0.1:9944
+  0%|                                                                                                        | 0/1 [00:00<?, ?it/s][0m100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.19it/s][0m[0m100%|████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.19it/s][0m
+Do you want to unstake from the following keys to coldkey-01:
+    [1;37m- hotkey-07:5CfgFFCPk5eFPoiLFkG4CGGRsZ9NjqyiAyYsnqgu877bzpMH: 0.11537 τ[0m
+ [1;35m[y/n][0m: [0m[0my
+Enter password to unlock key: 
+[?25l[0m[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠇[0m 🔑 Decrypting key...[0m[2K[32m⠏[0m 🔑 Decrypting key...[0m[2K[32m⠋[0m 🔑 Decrypting key...[0m[2K[32m⠙[0m 🔑 Decrypting key...[0m[2K[32m⠹[0m 🔑 Decrypting key...[0m[2K[32m⠸[0m 🔑 Decrypting key...[0m[2K[32m⠼[0m 🔑 Decrypting key...[0m[2K[32m⠴[0m 🔑 Decrypting key...[0m[2K[32m⠦[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...[0m[2K[32m⠧[0m 🔑 Decrypting key...
+[?25h[1A[2K[0m[?25l[0m[32m⠋[0m 📡 Syncing with chain: [37mlocal[0m ...
+[?25h[1A[2K[0mDo you want to unstake:
+[1;37m  amount: τ0.115370000[0m
+[1;37m  hotkey: hotkey-07[0m? [1;35m[y/n][0m: [0my
+[?25l[0m{'code': 1014, 'message': 'Priority is too low: (18446744073709551615 vs 18446744073709551615)', 'data': 'The transaction has too 
+low priority to replace another transaction already in the pool.'}, retrying in 2 seconds...
+[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K{'code': 1014, 'message': 'Priority is too low: (18446744073709551615 vs 18446744073709551615)', 'data': 'The transaction has too 
+low priority to replace another transaction already in the pool.'}, retrying in 4 seconds...
+[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠦[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠧[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠇[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠏[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠋[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠙[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠹[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠸[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠼[0m 📡 Unstaking from chain: [37mlocal[0m ...[0m[2K[32m⠴[0m 📡 Unstaking from chain: [37mlocal[0m ...
+[?25h[1A[2K[0m[31m╭─[0m[31m──────────────────────────────[0m[31m [0m[1;31mTraceback [0m[1;2;31m(most recent call last)[0m[31m [0m[31m───────────────────────────────[0m[31m─╮[0m
+[31m│[0m [2;33m/usr/local/bin/[0m[1;33mbtcli[0m:[94m32[0m in [92m<module>[0m                                                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m29 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m30 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m31 [0m[94mif[0m [91m__name__[0m == [33m'[0m[33m__main__[0m[33m'[0m:                                                                  [31m│[0m
+[31m│[0m [31m❱ [0m32 [2m│   [0mmain()                                                                                  [31m│[0m
+[31m│[0m   [2m33 [0m                                                                                            [31m│[0m
+[31m│[0m   [2m34 [0m[2m# The MIT License (MIT)[0m                                                                     [31m│[0m
+[31m│[0m   [2m35 [0m[2m# Copyright © 2021 Yuma Rao[0m                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/bin/[0m[1;33mbtcli[0m:[94m22[0m in [92mmain[0m                                                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m19 [0m[2m│   [0m                                                                                        [31m│[0m
+[31m│[0m   [2m20 [0m[2m│   [0m[94mtry[0m:                                                                                    [31m│[0m
+[31m│[0m   [2m21 [0m[2m│   │   [0mcli_instance = btcli(args=sys.argv[[94m1[0m:])                                             [31m│[0m
+[31m│[0m [31m❱ [0m22 [2m│   │   [0mcli_instance.run()                                                                  [31m│[0m
+[31m│[0m   [2m23 [0m[2m│   [0m[94mexcept[0m [96mKeyboardInterrupt[0m:                                                               [31m│[0m
+[31m│[0m   [2m24 [0m[2m│   │   [0m[96mprint[0m([33m'[0m[33mKeyboardInterrupt[0m[33m'[0m)                                                          [31m│[0m
+[31m│[0m   [2m25 [0m[2m│   [0m[94mexcept[0m [96mRuntimeError[0m [94mas[0m e:                                                               [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33mcli.py[0m:[94m363[0m in [92mrun[0m                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m360 [0m[2m│   │   │   [0mcommand_data = COMMANDS[command]                                               [31m│[0m
+[31m│[0m   [2m361 [0m[2m│   │   │   [0m                                                                               [31m│[0m
+[31m│[0m   [2m362 [0m[2m│   │   │   [0m[94mif[0m [96misinstance[0m(command_data, [96mdict[0m):                                             [31m│[0m
+[31m│[0m [31m❱ [0m363 [2m│   │   │   │   [0mcommand_data[[33m"[0m[33mcommands[0m[33m"[0m][[96mself[0m.config[[33m"[0m[33msubcommand[0m[33m"[0m]].run([96mself[0m)              [31m│[0m
+[31m│[0m   [2m364 [0m[2m│   │   │   [0m[94melse[0m:                                                                          [31m│[0m
+[31m│[0m   [2m365 [0m[2m│   │   │   │   [0mcommand_data.run([96mself[0m)                                                     [31m│[0m
+[31m│[0m   [2m366 [0m[2m│   │   [0m[94melse[0m:                                                                              [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/commands/[0m[1;33munstake.py[0m:[94m160[0m in [92mrun[0m                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m157 [0m[2m│   │   │   [0msubtensor: [33m"[0m[33mbittensor.subtensor[0m[33m"[0m = bittensor.subtensor(                        [31m│[0m
+[31m│[0m   [2m158 [0m[2m│   │   │   │   [0mconfig=config, log_verbose=[94mFalse[0m                                           [31m│[0m
+[31m│[0m   [2m159 [0m[2m│   │   │   [0m)                                                                              [31m│[0m
+[31m│[0m [31m❱ [0m160 [2m│   │   │   [0mUnStakeCommand._run(cli, subtensor)                                            [31m│[0m
+[31m│[0m   [2m161 [0m[2m│   │   [0m[94mfinally[0m:                                                                           [31m│[0m
+[31m│[0m   [2m162 [0m[2m│   │   │   [0m[94mif[0m [33m"[0m[33msubtensor[0m[33m"[0m [95min[0m [96mlocals[0m():                                                    [31m│[0m
+[31m│[0m   [2m163 [0m[2m│   │   │   │   [0msubtensor.close()                                                          [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/commands/[0m[1;33munstake.py[0m:[94m281[0m in [92m_run[0m                [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m278 [0m[2m│   │   [0m                                                                                   [31m│[0m
+[31m│[0m   [2m279 [0m[2m│   │   [0m[94mif[0m [96mlen[0m(final_hotkeys) == [94m1[0m:                                                        [31m│[0m
+[31m│[0m   [2m280 [0m[2m│   │   │   [0m[2m# do regular unstake[0m                                                           [31m│[0m
+[31m│[0m [31m❱ [0m281 [2m│   │   │   [0m[94mreturn[0m subtensor.unstake(                                                      [31m│[0m
+[31m│[0m   [2m282 [0m[2m│   │   │   │   [0mwallet=wallet,                                                             [31m│[0m
+[31m│[0m   [2m283 [0m[2m│   │   │   │   [0mhotkey_ss58=final_hotkeys[[94m0[0m][[94m1[0m],                                           [31m│[0m
+[31m│[0m   [2m284 [0m[2m│   │   │   │   [0mamount=[94mNone[0m [94mif[0m cli.config.get([33m"[0m[33munstake_all[0m[33m"[0m) [94melse[0m final_amounts[[94m0[0m],        [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1759[0m in [92munstake[0m                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1756 [0m[2;33m│   │   [0m[33mThis function supports flexible stake management, allowing neurons to adjust the[0m  [31m│[0m
+[31m│[0m   [2m1757 [0m[2;33m│   │   [0m[33mand potential reward accruals.[0m                                                    [31m│[0m
+[31m│[0m   [2m1758 [0m[2;33m│   │   [0m[33m"""[0m                                                                               [31m│[0m
+[31m│[0m [31m❱ [0m1759 [2m│   │   [0m[94mreturn[0m unstake_extrinsic(                                                         [31m│[0m
+[31m│[0m   [2m1760 [0m[2m│   │   │   [0m[96mself[0m,                                                                         [31m│[0m
+[31m│[0m   [2m1761 [0m[2m│   │   │   [0mwallet,                                                                       [31m│[0m
+[31m│[0m   [2m1762 [0m[2m│   │   │   [0mhotkey_ss58,                                                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/extrinsics/[0m[1;33munstaking.py[0m:[94m152[0m in                 [31m│[0m
+[31m│[0m [92munstake_extrinsic[0m                                                                                [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m149 [0m[2m│   │   │   │   [0msubtensor.network                                                          [31m│[0m
+[31m│[0m   [2m150 [0m[2m│   │   │   [0m)                                                                              [31m│[0m
+[31m│[0m   [2m151 [0m[2m│   │   [0m):                                                                                 [31m│[0m
+[31m│[0m [31m❱ [0m152 [2m│   │   │   [0mstaking_response: [96mbool[0m = __do_remove_stake_single(                             [31m│[0m
+[31m│[0m   [2m153 [0m[2m│   │   │   │   [0msubtensor=subtensor,                                                       [31m│[0m
+[31m│[0m   [2m154 [0m[2m│   │   │   │   [0mwallet=wallet,                                                             [31m│[0m
+[31m│[0m   [2m155 [0m[2m│   │   │   │   [0mhotkey_ss58=hotkey_ss58,                                                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/extrinsics/[0m[1;33munstaking.py[0m:[94m63[0m in                  [31m│[0m
+[31m│[0m [92m__do_remove_stake_single[0m                                                                         [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 60 [0m[2m│   [0m[2m# Decrypt keys,[0m                                                                        [31m│[0m
+[31m│[0m   [2m 61 [0m[2m│   [0mwallet.coldkey                                                                         [31m│[0m
+[31m│[0m   [2m 62 [0m[2m│   [0m                                                                                       [31m│[0m
+[31m│[0m [31m❱ [0m 63 [2m│   [0msuccess = subtensor._do_unstake(                                                       [31m│[0m
+[31m│[0m   [2m 64 [0m[2m│   │   [0mwallet=wallet,                                                                     [31m│[0m
+[31m│[0m   [2m 65 [0m[2m│   │   [0mhotkey_ss58=hotkey_ss58,                                                           [31m│[0m
+[31m│[0m   [2m 66 [0m[2m│   │   [0mamount=amount,                                                                     [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1817[0m in [92m_do_unstake[0m               [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1814 [0m[2m│   │   │   │   [0m[94melse[0m:                                                                     [31m│[0m
+[31m│[0m   [2m1815 [0m[2m│   │   │   │   │   [0m[94mraise[0m StakeError(response.error_message)                              [31m│[0m
+[31m│[0m   [2m1816 [0m[2m│   │   [0m                                                                                  [31m│[0m
+[31m│[0m [31m❱ [0m1817 [2m│   │   [0m[94mreturn[0m make_substrate_call_with_retry()                                           [31m│[0m
+[31m│[0m   [2m1818 [0m[2m│   [0m                                                                                      [31m│[0m
+[31m│[0m   [2m1819 [0m[2m│   [0m[2m################[0m                                                                      [31m│[0m
+[31m│[0m   [2m1820 [0m[2m│   [0m[2m#### Senate ####[0m                                                                      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/[0m[1;33mdecorator.py[0m:[94m232[0m in [92mfun[0m                                  [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m229 [0m[2m│   │   [0m[94mdef[0m [92mfun[0m(*args, **kw):                                                              [31m│[0m
+[31m│[0m   [2m230 [0m[2m│   │   │   [0m[94mif[0m [95mnot[0m kwsyntax:                                                               [31m│[0m
+[31m│[0m   [2m231 [0m[2m│   │   │   │   [0margs, kw = fix(args, kw, sig)                                              [31m│[0m
+[31m│[0m [31m❱ [0m232 [2m│   │   │   [0m[94mreturn[0m caller(func, *(extras + args), **kw)                                    [31m│[0m
+[31m│[0m   [2m233 [0m[2m│   [0mfun.[91m__name__[0m = func.[91m__name__[0m                                                           [31m│[0m
+[31m│[0m   [2m234 [0m[2m│   [0mfun.[91m__doc__[0m = func.[91m__doc__[0m                                                             [31m│[0m
+[31m│[0m   [2m235 [0m[2m│   [0mfun.__wrapped__ = func                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/retry/[0m[1;33mapi.py[0m:[94m73[0m in [92mretry_decorator[0m                       [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 70 [0m[2m│   [0m[94mdef[0m [92mretry_decorator[0m(f, *fargs, **fkwargs):                                             [31m│[0m
+[31m│[0m   [2m 71 [0m[2m│   │   [0margs = fargs [94mif[0m fargs [94melse[0m [96mlist[0m()                                                  [31m│[0m
+[31m│[0m   [2m 72 [0m[2m│   │   [0mkwargs = fkwargs [94mif[0m fkwargs [94melse[0m [96mdict[0m()                                            [31m│[0m
+[31m│[0m [31m❱ [0m 73 [2m│   │   [0m[94mreturn[0m __retry_internal(partial(f, *args, **kwargs), exceptions, tries, delay, m   [31m│[0m
+[31m│[0m   [2m 74 [0m[2m│   │   │   │   │   │   │   │   [0mlogger)                                                    [31m│[0m
+[31m│[0m   [2m 75 [0m[2m│   [0m                                                                                       [31m│[0m
+[31m│[0m   [2m 76 [0m[2m│   [0m[94mreturn[0m retry_decorator                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/retry/[0m[1;33mapi.py[0m:[94m33[0m in [92m__retry_internal[0m                      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 30 [0m[2m│   [0m_tries, _delay = tries, delay                                                          [31m│[0m
+[31m│[0m   [2m 31 [0m[2m│   [0m[94mwhile[0m _tries:                                                                          [31m│[0m
+[31m│[0m   [2m 32 [0m[2m│   │   [0m[94mtry[0m:                                                                               [31m│[0m
+[31m│[0m [31m❱ [0m 33 [2m│   │   │   [0m[94mreturn[0m f()                                                                     [31m│[0m
+[31m│[0m   [2m 34 [0m[2m│   │   [0m[94mexcept[0m exceptions [94mas[0m e:                                                            [31m│[0m
+[31m│[0m   [2m 35 [0m[2m│   │   │   [0m_tries -= [94m1[0m                                                                    [31m│[0m
+[31m│[0m   [2m 36 [0m[2m│   │   │   [0m[94mif[0m [95mnot[0m _tries:                                                                 [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/bittensor/[0m[1;33msubtensor.py[0m:[94m1802[0m in                           [31m│[0m
+[31m│[0m [92mmake_substrate_call_with_retry[0m                                                                   [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1799 [0m[2m│   │   │   │   [0mextrinsic = substrate.create_signed_extrinsic(                            [31m│[0m
+[31m│[0m   [2m1800 [0m[2m│   │   │   │   │   [0mcall=call, keypair=wallet.coldkey                                     [31m│[0m
+[31m│[0m   [2m1801 [0m[2m│   │   │   │   [0m)                                                                         [31m│[0m
+[31m│[0m [31m❱ [0m1802 [2m│   │   │   │   [0mresponse = substrate.submit_extrinsic(                                    [31m│[0m
+[31m│[0m   [2m1803 [0m[2m│   │   │   │   │   [0mextrinsic,                                                            [31m│[0m
+[31m│[0m   [2m1804 [0m[2m│   │   │   │   │   [0mwait_for_inclusion=wait_for_inclusion,                                [31m│[0m
+[31m│[0m   [2m1805 [0m[2m│   │   │   │   │   [0mwait_for_finalization=wait_for_finalization,                          [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/substrateinterface/[0m[1;33mbase.py[0m:[94m1788[0m in [92msubmit_extrinsic[0m      [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m1785 [0m[2m│   │   │   │   │   [0m}                                                                     [31m│[0m
+[31m│[0m   [2m1786 [0m[2m│   │   [0m                                                                                  [31m│[0m
+[31m│[0m   [2m1787 [0m[2m│   │   [0m[94mif[0m wait_for_inclusion [95mor[0m wait_for_finalization:                                   [31m│[0m
+[31m│[0m [31m❱ [0m1788 [2m│   │   │   [0mresponse = [96mself[0m.rpc_request(                                                  [31m│[0m
+[31m│[0m   [2m1789 [0m[2m│   │   │   │   [0m[33m"[0m[33mauthor_submitAndWatchExtrinsic[0m[33m"[0m,                                         [31m│[0m
+[31m│[0m   [2m1790 [0m[2m│   │   │   │   [0m[[96mstr[0m(extrinsic.data)],                                                    [31m│[0m
+[31m│[0m   [2m1791 [0m[2m│   │   │   │   [0mresult_handler=result_handler                                             [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m [2;33m/usr/local/lib/python3.10/dist-packages/substrateinterface/[0m[1;33mbase.py[0m:[94m299[0m in [92mrpc_request[0m            [31m│[0m
+[31m│[0m                                                                                                  [31m│[0m
+[31m│[0m   [2m 296 [0m[2m│   │   │   │   │   │   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 297 [0m[2m│   │   │   │   │   │   [0m[2m# Check if response has error[0m                                     [31m│[0m
+[31m│[0m   [2m 298 [0m[2m│   │   │   │   │   │   [0m[94mif[0m [33m'[0m[33merror[0m[33m'[0m [95min[0m message:                                            [31m│[0m
+[31m│[0m [31m❱ [0m 299 [2m│   │   │   │   │   │   │   [0m[94mraise[0m SubstrateRequestException(message[[33m'[0m[33merror[0m[33m'[0m])             [31m│[0m
+[31m│[0m   [2m 300 [0m[2m│   │   │   │   │   │   [0m                                                                  [31m│[0m
+[31m│[0m   [2m 301 [0m[2m│   │   │   │   │   │   [0m[2m# If result handler is set, pass result through and loop until h[0m  [31m│[0m
+[31m│[0m   [2m 302 [0m[2m│   │   │   │   │   │   [0m[94mif[0m [96mcallable[0m(result_handler):                                      [31m│[0m
+[31m╰──────────────────────────────────────────────────────────────────────────────────────────────────╯[0m
+[1;91mSubstrateRequestException: [0m[1m{[0m[32m'code'[0m: [1;36m1014[0m, [32m'message'[0m: [32m'Priority is too low: [0m[32m([0m[32m18446744073709551615 vs 18446744073709551615[0m[32m)[0m[32m'[0m, [32m'data'[0m:
+[32m'The transaction has too low priority to replace another transaction already in the pool.'[0m[1m}[0m
+[0m[0m

@@ -16,10 +16,10 @@ import time
 import json
 
 
-PORT = 41337
+PORT = 41338
 subtensor_address = "127.0.0.1:9944"
-CACHE_DURATION = timedelta(minutes=5)  # Cache freshness duration
-CACHE_KEEP_ALIVE_INTERVAL = 30  # Cache check interval in seconds, adjusted here
+CACHE_DURATION = timedelta(minutes=1)  # Cache freshness duration
+CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 
 
 class Server(socketserver.TCPServer):

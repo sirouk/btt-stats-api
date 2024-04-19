@@ -211,7 +211,7 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             # Check if the cache is fresh
             if hash_key in self.cache and (current_time - self.cache[hash_key]['time'] <= CACHE_DURATION):
                 print(f"Loading from cache for {path}")
-                with open(file_name, 'r') as file:
+                with open(file_name, 'r', encoding='utf-8', errors='replace') as file:
                     output = file.read()
                     if not output.strip():
                         raise ValueError("Cache file is empty or invalid")  # Treat empty cache as an error
@@ -222,9 +222,9 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             print(f"Cache miss or error ({e}): Refreshing data for {path}")
             output = handle_request(path, query_params)
 
-            if output is not False:
+            if output:
                 self.cache[hash_key] = {'time': current_time}
-                with open(file_name, 'w') as file:
+                with open(file_name, 'w', encoding='utf-8', errors='replace') as file:
                     file.write(output)
                 with open(last_req_file, 'w') as file:
                     json.dump({'path': path, 'query_params': query_params}, file)  # Save the parameters
@@ -266,7 +266,7 @@ def continuously_update_cache():
                     output = handle_request(path, query_params)  
 
                     
-                    with open(file_name, 'w') as file:
+                    with open(file_name, 'w', encoding='utf-8', errors='replace') as file:
                         file.write(output)
                     CommandHandler.cache[hash_key] = {'time': current_time}
         except Exception as e:

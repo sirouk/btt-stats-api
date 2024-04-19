@@ -20,6 +20,7 @@ PORT = 41337
 subtensor_address = "127.0.0.1:9944"
 CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
 CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
+CACHE_FILE = "cache_state.json"
 
 
 class Server(socketserver.TCPServer):
@@ -197,6 +198,26 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
     cache = {}
     cache_lock = threading.Lock()  # Create a lock for cache operations
 
+
+    @classmethod
+    def load_cache(cls):
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE, 'r') as file:
+                cls.cache = json.load(file)
+                # Convert the saved timestamps back to datetime objects
+                for key, value in cls.cache.items():
+                    value['time'] = datetime.fromisoformat(value['time'])
+
+
+    @classmethod
+    def save_cache(cls):
+        with cls.cache_lock:
+            # Convert datetime objects to string for JSON serialization
+            temp_cache = {key: {'time': value['time'].isoformat()} for key, value in cls.cache.items()}
+            with open(CACHE_FILE, 'w') as file:
+                json.dump(temp_cache, file)
+
+
     def do_GET(self):
         with self.cache_lock: # Lock the cache for reading
 
@@ -246,6 +267,8 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
 
             pass
 
+        self.save_cache()
+
 
 def continuously_update_cache():
     while True:
@@ -281,11 +304,13 @@ def continuously_update_cache():
                 print(f"Error updating cache: {e}")
 
             pass
-
+        
+        CommandHandler.save_cache()
         time.sleep(CACHE_KEEP_ALIVE_INTERVAL)            
 
 
 if __name__ == "__main__":
+    CommandHandler.load_cache()
     threading.Thread(target=continuously_update_cache, daemon=True).start()
     with Server(("", PORT), CommandHandler) as httpd:
         print(f"Serving at port {PORT}")

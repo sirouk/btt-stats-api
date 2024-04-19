@@ -1,19 +1,0 @@
-spawn /usr/local/bin/btcli stake remove --amount 1.22342 --wallet.name coldkey-01 --wallet.hotkey hotkey-06 --subtensor.network local --subtensor.chain_endpoint ws://127.0.0.1:9944
-  0%|                                                                                                                                                             | 0/1 [00:00<?, ?it/s]100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.42it/s]100%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  1.42it/s]
-Not enough stake to unstake from any hotkeys or max_stake is more than current stake.
-send: spawn id exp5 not open
-    while executing
-"send "y\r""
-    ("foreach" body line 13)
-    invoked from within
-"foreach hotkey $hotkeys {
-
-            # Modify the spawn command to include the --amount option if amount is specified
-            if { $amount != ""..."
-    ("foreach" body line 11)
-    invoked from within
-"foreach coldkey $coldkeys {
-        # Check if the password for this coldkey exists
-        if { ! [info exists coldkey_passwords($coldkey)] } {
-     ..."
-    (file "/root/btt-cron-reg/btt_unstake_from_hk.sh" line 58)

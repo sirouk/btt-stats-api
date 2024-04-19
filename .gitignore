@@ -7,3 +7,8 @@ cache_*
 ./last_*
 last_**
 last_*
+
+./btt_unstake_**.log
+./btt_unstake_*.log
+btt_unstake_**.log
+btt_unstake_*.log

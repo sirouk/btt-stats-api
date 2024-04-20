@@ -14,12 +14,14 @@ import hashlib
 import threading
 import time
 import json
+subprocess.run(["python3", "-m", "pip", "install", "portalocker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # Ensure pandas is installed
+import portalocker
 
 
 PORT = 41337
 subtensor_address = "127.0.0.1:9944"
-CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
-CACHE_KEEP_ALIVE_INTERVAL = 30  # Cache check interval in seconds, adjusted here
+CACHE_DURATION = timedelta(minutes=7)  # Cache freshness duration
+CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
 CACHE_PATHS_TO_SKIP = {'/favicon.ico'}
 
@@ -196,125 +198,102 @@ def handle_request(path, query_params):
 
 
 class CommandHandler(http.server.SimpleHTTPRequestHandler):
-    cache = {}
-    cache_lock = threading.Lock()  # Create a lock for cache operations
 
-
-    @classmethod
-    def load_cache(cls):
-        if os.path.exists(CACHE_FILE):
-            with open(CACHE_FILE, 'r') as file:
-                cls.cache = json.load(file)
-                # Convert the saved timestamps back to datetime objects
-                for key, value in cls.cache.items():
-                    value['time'] = datetime.fromisoformat(value['time'])
-
-
-    @classmethod
-    def save_cache(cls):
-        with cls.cache_lock:
-            # Convert datetime objects to string for JSON serialization
-            temp_cache = {key: {'time': value['time'].isoformat()} for key, value in cls.cache.items()}
-            with open(CACHE_FILE, 'w') as file:
-                json.dump(temp_cache, file)
+    @staticmethod
+    def get_file_lock(file_name, mode='r+'):
+        # Open the file directly in the desired mode
+        file = open(file_name, mode, encoding='utf-8', errors='replace')
+        # Lock the file with portalocker
+        portalocker.lock(file, portalocker.LOCK_EX)
+        return file
 
 
     def do_GET(self):
-        with self.cache_lock: # Lock the cache for reading
+        parsed_url = urlparse(self.path)
+        path = parsed_url.path
+        query = parsed_url.query
+        query_params = parse_qs(query)
 
-            parsed_url = urlparse(self.path)
-            path = parsed_url.path
-            query = parsed_url.query
-            query_params = parse_qs(query)
+        if path in CACHE_PATHS_TO_SKIP:
+            return
 
-            if path in CACHE_PATHS_TO_SKIP:
-                return
+        current_time = datetime.now()
+        hash_key = get_hash_key(path, query_params)
+        file_name = f"cache_{hash_key}.csv"
+        last_req_file = f"last_{hash_key}.json"
 
-            current_time = datetime.now()
-            hash_key = get_hash_key(path, query_params)
-            file_name = f"cache_{hash_key}.csv"
-            last_req_file = f"last_{hash_key}.json"  # JSON file to store request parameters
+        try:
+            # Use a context manager to handle the file with the lock
+            with self.get_file_lock(file_name, 'r+') as file:
+                output = file.read()
+                if not output.strip() or (current_time - datetime.fromtimestamp(os.path.getmtime(file_name))) > CACHE_DURATION:
+                    raise ValueError("Cache is outdated or invalid")
+        except (IOError, ValueError):
+            print(f"Cache for {path} is outdated or invalid, updating...")
+            output = handle_request(path, query_params)
+            with self.get_file_lock(file_name, 'w') as file:
+                file.write(output)
+                file.truncate()
+            with open(last_req_file, 'w', encoding='utf-8', errors='replace') as file:
+                json.dump({'path': path, 'query_params': query_params}, file)
 
-            try:
-                # Check if the cache is fresh
-                #if hash_key in self.cache and (current_time - self.cache[hash_key]['time'] <= CACHE_DURATION):
-                if hash_key in self.cache:
-                    print(f"Loading from cache for {path}")
-                    with open(file_name, 'r', encoding='utf-8', errors='replace') as file:
-                        output = file.read()
-                        if not output.strip():
-                            raise ValueError("Cache file is empty or invalid")  # Treat empty cache as an error
-                else:
-                    raise ValueError("Cache is outdated or does not exist")  # Force a cache refresh if outdated or missing
-            except (IOError, ValueError) as e:
-                # Handle any kind of error by refreshing data
-                print(f"Cache miss or error ({e}): Refreshing data for {path}")
-                output = handle_request(path, query_params)
-
-                if output:
-                    self.cache[hash_key] = {'time': current_time}
-                    with open(file_name, 'w', encoding='utf-8', errors='replace') as file:
-                        file.write(output)
-                    with open(last_req_file, 'w') as file:
-                        json.dump({'path': path, 'query_params': query_params}, file)  # Save the parameters
-
-                else:
-                    self.send_response(404)
-                    return
-
-
-            # Send response
+        if output:
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
             self.wfile.write(output.encode())
+        else:
+            self.send_response(404)
 
-            pass
 
-        self.save_cache()
+def refresh_cache_file(path, query_params, file_name):
+    output = handle_request(path, query_params)
+    try:
+        with CommandHandler.get_file_lock(file_name, 'w') as file:
+            file.write(output)
+            file.truncate()  # Ensure to clear any excess if new output is shorter
+    except IOError as e:
+        print(f"Error writing to cache file {file_name}: {e}")
 
 
 def continuously_update_cache():
     while True:
-       
         try:
             last_files = [f for f in os.listdir('.') if f.startswith('last_')]
             for last_file in last_files:
-
-                with open(last_file, 'r') as file:
-                    data = json.load(file)                
-                path = data['path']
-                query_params = data['query_params']                             
+                with open(last_file, 'r', encoding='utf-8', errors='replace') as file:
+                    data = json.load(file)
                 
-                current_time = datetime.now()
+                path = data['path']
+                query_params = data['query_params']
                 hash_key = get_hash_key(path, query_params)
                 file_name = f"cache_{hash_key}.csv"
 
-                # Determine cache file state
-                cached_but_aged = hash_key in CommandHandler.cache and (current_time - CommandHandler.cache[hash_key]['time'] > CACHE_DURATION)
-                cache_file_issue = not os.path.exists(file_name) or os.path.getsize(file_name) == 0
+                try:
+                    # Check if the file exists and its modification time
+                    if os.path.exists(file_name):
+                        file_mod_time = datetime.fromtimestamp(os.path.getmtime(file_name))
+                        current_time = datetime.now()
 
-                if cached_but_aged or cache_file_issue:
-                    with CommandHandler.cache_lock:  # Lock the cache for writing
-                        print(f"Refreshing cache for {path}")
-                        output = handle_request(path, query_params)  
-
-                        
-                        with open(file_name, 'w', encoding='utf-8', errors='replace') as file:
-                            file.write(output)
-                        CommandHandler.cache[hash_key] = {'time': current_time}
-                        
-                        CommandHandler.save_cache()
-                        pass
+                        # Update cache if it is outdated
+                        if (current_time - file_mod_time) > CACHE_DURATION:
+                            print(f"Cache for {path} is outdated, refreshing...")
+                            refresh_cache_file(path, query_params, file_name)
+                        else:
+                            print(f"Cache for {path} is still fresh, skipping...")
+                    else:
+                        # If the file does not exist, regenerate it
+                        print(f"Cache file {file_name} not found, generating new cache...")
+                        refresh_cache_file(path, query_params, file_name)
+                except Exception as e:
+                    print(f"Failed to update cache for {path}: {e}")
 
         except Exception as e:
-            print(f"Error updating cache: {e}")        
-        
-        time.sleep(CACHE_KEEP_ALIVE_INTERVAL)            
+            print(f"Error during cache update loop: {e}")
+        time.sleep(CACHE_KEEP_ALIVE_INTERVAL)
 
 
 if __name__ == "__main__":
-    CommandHandler.load_cache()
     threading.Thread(target=continuously_update_cache, daemon=True).start()
     with Server(("", PORT), CommandHandler) as httpd:
         print(f"Serving at port {PORT}")

@@ -18,9 +18,10 @@ import json
 
 PORT = 41337
 subtensor_address = "127.0.0.1:9944"
-CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
-CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
+CACHE_DURATION = timedelta(minutes=7)  # Cache freshness duration
+CACHE_KEEP_ALIVE_INTERVAL = 30  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
+CACHE_PATHS_TO_SKIP = {'/favicon.ico'}
 
 
 class Server(socketserver.TCPServer):
@@ -226,6 +227,9 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
             query = parsed_url.query
             query_params = parse_qs(query)
 
+            if path in CACHE_PATHS_TO_SKIP:
+                return
+
             current_time = datetime.now()
             hash_key = get_hash_key(path, query_params)
             file_name = f"cache_{hash_key}.csv"
@@ -272,27 +276,26 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
 
 def continuously_update_cache():
     while True:
-        with CommandHandler.cache_lock:  # Lock the cache for writing
+       
+        try:
+            last_files = [f for f in os.listdir('.') if f.startswith('last_')]
+            for last_file in last_files:
 
-            try:
-                last_files = [f for f in os.listdir('.') if f.startswith('last_')]
-                for last_file in last_files:
+                with open(last_file, 'r') as file:
+                    data = json.load(file)                
+                path = data['path']
+                query_params = data['query_params']                             
+                
+                current_time = datetime.now()
+                hash_key = get_hash_key(path, query_params)
+                file_name = f"cache_{hash_key}.csv"
 
-                    with open(last_file, 'r') as file:
-                        data = json.load(file)                
-                    path = data['path']
-                    query_params = data['query_params']                             
-                    
-                    current_time = datetime.now()
-                    hash_key = get_hash_key(path, query_params)
-                    file_name = f"cache_{hash_key}.csv"
+                # Determine cache file state
+                cached_but_aged = hash_key in CommandHandler.cache and (current_time - CommandHandler.cache[hash_key]['time'] > CACHE_DURATION)
+                cache_file_issue = not os.path.exists(file_name) or os.path.getsize(file_name) == 0
 
-                    # Determine cache file state
-                    cached_but_aged = hash_key in CommandHandler.cache and (current_time - CommandHandler.cache[hash_key]['time'] > CACHE_DURATION)
-                    cache_file_issue = not os.path.exists(file_name) or os.path.getsize(file_name) == 0
-
-                    if cached_but_aged or cache_file_issue:
-                        
+                if cached_but_aged or cache_file_issue:
+                    with CommandHandler.cache_lock:  # Lock the cache for writing
                         print(f"Refreshing cache for {path}")
                         output = handle_request(path, query_params)  
 
@@ -300,12 +303,13 @@ def continuously_update_cache():
                         with open(file_name, 'w', encoding='utf-8', errors='replace') as file:
                             file.write(output)
                         CommandHandler.cache[hash_key] = {'time': current_time}
-            except Exception as e:
-                print(f"Error updating cache: {e}")
-
-            pass
+                        
+                        CommandHandler.save_cache()
+                        pass
+                    
+        except Exception as e:
+            print(f"Error updating cache: {e}")        
         
-        CommandHandler.save_cache()
         time.sleep(CACHE_KEEP_ALIVE_INTERVAL)            
 
 

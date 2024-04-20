@@ -20,7 +20,7 @@ import portalocker
 
 PORT = 41337
 subtensor_address = "127.0.0.1:9944"
-CACHE_DURATION = timedelta(minutes=7)  # Cache freshness duration
+CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
 CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
 CACHE_PATHS_TO_SKIP = {'/favicon.ico'}

@@ -16,6 +16,7 @@ import time
 import json
 subprocess.run(["python3", "-m", "pip", "install", "portalocker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # Ensure pandas is installed
 import portalocker
+import requests
 
 
 PORT = 41337
@@ -190,6 +191,50 @@ def handle_request(path, query_params):
 
         # Convert DataFrame to CSV string
         output += df.to_csv(index=False)
+
+    elif path == '/sn19_uid_records':
+
+        # Parse URL parameters
+        fetch_file_date = query_params.get('fetchFileDate', [None])[0]
+        date_from = query_params.get('dateFrom', [None])[0]
+        date_to = query_params.get('dateTo', [None])[0]
+        
+        # Construct the URL to fetch the CSV file
+        csv_url = f"https://data.tauvision.ai/{fetch_file_date}_uid_records.csv"
+        
+        # Fetch the CSV file from the URL
+        try:
+            response = requests.get(csv_url)
+            response.raise_for_status()  # Raise an error for bad status codes
+        except requests.exceptions.RequestException as e:
+            pass
+        
+        # Read the CSV data into a DataFrame
+        csv_data = response.content.decode('utf-8')
+        df = pd.read_csv(StringIO(csv_data))
+        
+        # Convert date strings to datetime objects
+        date_from = datetime.strptime(date_from, '%Y-%m-%d')
+        date_to = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
+
+        # Ensure the 'created_at' column is parsed as datetime
+        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
+
+        # Print the DataFrame after parsing dates for debugging
+        print("DataFrame after parsing 'created_at' as datetime:")
+        print(df.head())
+
+        # Filter the DataFrame by the date range
+        filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]
+
+        # Print the filtered DataFrame for debugging
+        print("Filtered DataFrame:")
+        print(filtered_df.head())
+            
+        # Convert the filtered DataFrame back to CSV format
+        filtered_csv = filtered_df.to_csv(index=False)
+
+        output += filtered_csv
 
     else:
         return False

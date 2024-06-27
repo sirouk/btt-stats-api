@@ -192,15 +192,16 @@ def handle_request(path, query_params):
         # Convert DataFrame to CSV string
         output += df.to_csv(index=False)
 
-    elif path == '/sn19_uid_records':
+    elif path == '/sn19_metrics':
 
         # Parse URL parameters
         fetch_file_date = query_params.get('fetchFileDate', [None])[0]
         date_from = query_params.get('dateFrom', [None])[0]
         date_to = query_params.get('dateTo', [None])[0]
+        data_source = query_params.get('dataSource', [None])[0]
         
         # Construct the URL to fetch the CSV file
-        csv_url = f"https://data.tauvision.ai/{fetch_file_date}_uid_records.csv"
+        csv_url = f"https://data.tauvision.ai/{fetch_file_date}_{data_source}.csv"
         
         # Fetch the CSV file from the URL
         try:
@@ -212,6 +213,7 @@ def handle_request(path, query_params):
         # Read the CSV data into a DataFrame
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
+        print(df)
         
         # Convert date strings to datetime objects
         date_from = datetime.strptime(date_from, '%Y-%m-%d')

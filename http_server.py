@@ -24,7 +24,8 @@ subtensor_address = "127.0.0.1:9944"
 CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
 CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
-CACHE_PATHS_TO_SKIP = {'/favicon.ico'}
+PATHS_TO_SKIP = {'/favicon.ico'} # avoid these paths
+CACHE_DISABLED_PATHS = ['/sn19_metrics']  # Paths with caching disabled
 
 
 class Server(socketserver.TCPServer):
@@ -205,7 +206,7 @@ def handle_request(path, query_params):
         
         # Fetch the CSV file from the URL
         try:
-            response = requests.get(csv_url)
+            response = requests.get(csv_url + f"?r={int(time.time())}")
             response.raise_for_status()  # Raise an error for bad status codes
         except requests.exceptions.RequestException as e:
             pass
@@ -213,12 +214,17 @@ def handle_request(path, query_params):
         # Read the CSV data into a DataFrame
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
-        print(df)
+        
+        # Print the top and bottom of the DataFrame for debugging
+        print("Top of the DataFrame:")
+        print(df.head())
+        print("Bottom of the DataFrame:")
+        print(df.tail())
         
         # Convert date strings to datetime objects
         date_from = datetime.strptime(date_from, '%Y-%m-%d')
-        date_to = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(seconds=1)
-
+        date_to = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
+        
         # Ensure the 'created_at' column is parsed as datetime
         df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
 
@@ -226,12 +232,19 @@ def handle_request(path, query_params):
         print("DataFrame after parsing 'created_at' as datetime:")
         print(df.head())
 
+        # Debug: Print date range and min/max of created_at
+        print(f"Filtering from {date_from} to {date_to}")
+        print(f"Min created_at: {df['created_at'].min()}")
+        print(f"Max created_at: {df['created_at'].max()}")
+
         # Filter the DataFrame by the date range
         filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]
 
         # Print the filtered DataFrame for debugging
         print("Filtered DataFrame:")
         print(filtered_df.head())
+        print("Filtered DataFrame Bottom:")
+        print(filtered_df.tail())
             
         # Convert the filtered DataFrame back to CSV format
         filtered_csv = filtered_df.to_csv(index=False)
@@ -261,9 +274,24 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
         query = parsed_url.query
         query_params = parse_qs(query)
 
-        if path in CACHE_PATHS_TO_SKIP:
+
+        # Bypass caching for any specified paths
+        if path in CACHE_DISABLED_PATHS:
+            output = handle_request(path, query_params)
+            if output:
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(output.encode())
+            else:
+                self.send_response(404)
             return
 
+        if path in PATHS_TO_SKIP:
+            return
+        
+
+        # Handle w/cache
         current_time = datetime.now()
         hash_key = get_hash_key(path, query_params)
         file_name = f"cache_{hash_key}.csv"

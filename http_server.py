@@ -250,6 +250,49 @@ def handle_request(path, query_params):
         filtered_csv = filtered_df.to_csv(index=False)
 
         output += filtered_csv
+        
+    elif path == '/sn19_recent':
+        skip = 0
+        limit = 2500
+        all_data = []
+        oldest_date = datetime.now()
+        target_date = oldest_date - timedelta(days=3)
+        
+        while oldest_date > target_date:
+            url = f"https://tauvision.ai/api/get-reward-data?skip={skip}&limit={limit}&sort_by=created_at&sort_order=desc"
+            response = requests.get(url)
+            response.raise_for_status()
+            data = response.json()
+            if not data:
+                break
+            all_data.extend(data)
+            oldest_date = datetime.fromisoformat(data[-1]['created_at'].replace('Z', '+00:00'))
+            skip += limit
+            time.sleep(1)  # To avoid hitting rate limits
+        
+        # Process the collected data
+        date_to = datetime.now()
+        date_from = date_to - timedelta(days=3)
+        df = pd.DataFrame(all_data)
+        df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
+        filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]
+        
+        # Print debug information
+        print("Top of the DataFrame:")
+        print(filtered_df.head())
+        print("Bottom of the DataFrame:")
+        print(filtered_df.tail())
+        print(f"Filtering from {date_from} to {date_to}")
+        print(f"Min created_at: {filtered_df['created_at'].min()}")
+        print(f"Max created_at: {filtered_df['created_at'].max()}")
+        
+        # Convert the filtered DataFrame back to CSV format
+        filtered_csv = filtered_df.to_csv(index=False)
+        print("Filtered CSV (first 500 characters):")
+        print(filtered_csv[:500])
+        
+        # Instead of returning, you can assign the result to a variable or process it further as needed
+        output += filtered_csv
 
     else:
         return False

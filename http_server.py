@@ -252,11 +252,14 @@ def handle_request(path, query_params):
         output += filtered_csv
         
     elif path == '/sn19_recent':
+
+        hist_hours = query_params.get('hours', 72)[0]
+        
         skip = 0
         limit = 2500
         all_data = []
         oldest_date = datetime.now()
-        target_date = oldest_date - timedelta(days=2)
+        target_date = oldest_date - timedelta(hours=hist_hours)
         
         while oldest_date > target_date:
             url = f"https://tauvision.ai/api/get-reward-data?skip={skip}&limit={limit}&sort_by=created_at&sort_order=desc"
@@ -272,7 +275,7 @@ def handle_request(path, query_params):
         
         # Process the collected data
         date_to = datetime.now()
-        date_from = date_to - timedelta(days=2)
+        date_from = date_to - timedelta(hours=hist_hours)
         df = pd.DataFrame(all_data)
         df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
         filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]

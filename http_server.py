@@ -25,7 +25,7 @@ CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
 CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
 PATHS_TO_SKIP = {'/favicon.ico'} # avoid these paths
-CACHE_DISABLED_PATHS = ['/sn19_metrics']  # Paths with caching disabled
+CACHE_DISABLED_PATHS = ['/sn19_metrics','/sn19_recent']  # Paths with caching disabled
 
 
 class Server(socketserver.TCPServer):

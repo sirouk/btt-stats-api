@@ -49,6 +49,29 @@ def trim_output_from_pattern(output, start_pattern):
     return ''
 
 
+def process_metagraph_line(line, netuid, subtensor, current_block, subnet_info):
+    parts = line.split()
+    if len(parts) > 0 and parts[0].isdigit():
+        uid = int(parts[0])
+        block_at_registration = int(str(subtensor.query_subtensor("BlockAtRegistration", None, [int(netuid), uid])))
+        immune_until = block_at_registration + subnet_info.immunity_period
+        immune = immune_until > current_block
+        if immune:
+            return f"{line}  {immune_until}"
+        else:
+            return f"{line}  "
+    else:
+        return f"{line}  ImmuneUntil"  # Add header for the new column
+
+
+def prettify_time(seconds):
+    delta = timedelta(seconds=seconds)
+    days = delta.days
+    hours, remainder = divmod(delta.seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    time_str = f"{days:02}d:{hours:02}h:{minutes:02}m"
+    return time_str
+
 def get_subnet_weight(subnet_id, subtensor):
     return float(subtensor.get_emission_value_by_subnet(netuid=subnet_id))
 
@@ -73,6 +96,7 @@ def handle_request(path, query_params):
         string_io_obj = StringIO(cmd_output)
         df = pd.read_fwf(string_io_obj, colspecs='infer')
         output += df.to_csv(index=False)
+
 
     elif path == '/subnet-list':
         # Run the subnet list command
@@ -103,12 +127,16 @@ def handle_request(path, query_params):
         df = pd.read_fwf(string_io_obj, colspecs='infer')
         output += df.to_csv(index=False)
 
+
     elif path == '/metagraph':
         netuids = query_params.get('netuid', [''])[0].split(',')
         sanitized_egrep_keys = [re.escape(key) for key in query_params.get('egrep', []) if re.match(r'^[a-zA-Z0-9]+$', key)]
         pattern = "|".join(sanitized_egrep_keys)
 
-        
+        # Initialize subtensor connection
+        subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
+        current_block = subtensor.get_current_block()
+
         for netuid in netuids:
             lines = []
             if re.match(r'^\d+$', netuid):
@@ -119,12 +147,16 @@ def handle_request(path, query_params):
                 netuid_output = clean_chars(netuid_output)
                 netuid_output = trim_output_from_pattern(netuid_output, "Metagraph")
 
+                subnet_info: bt.SubnetInfo = subtensor.get_subnet_info(int(netuid))
+
                 netuid_lines = netuid_output.splitlines()
                 for line in netuid_lines:
                     if sanitized_egrep_keys and re.search(pattern, line):
-                        lines.append(f"{netuid}  {line}")
+                        modified_line = process_metagraph_line(line, netuid, subtensor, current_block, subnet_info)
+                        lines.append(f"{netuid}  {modified_line}")
                     elif not sanitized_egrep_keys:
-                        lines.append(f"{netuid}  {line}")
+                        modified_line = process_metagraph_line(line, netuid, subtensor, current_block, subnet_info)
+                        lines.append(f"{netuid}  {modified_line}")
             else:
                 return
 
@@ -135,6 +167,7 @@ def handle_request(path, query_params):
 
             # Convert DataFrame to CSV string
             output += df.to_csv(index=False)
+
 
     elif path == '/registrations':
 
@@ -192,6 +225,7 @@ def handle_request(path, query_params):
 
         # Convert DataFrame to CSV string
         output += df.to_csv(index=False)
+
 
     elif path == '/sn19_metrics':
 
@@ -251,6 +285,7 @@ def handle_request(path, query_params):
 
         output += filtered_csv
         
+
     elif path == '/sn19_recent':
 
         hist_hours = query_params.get('hours', 72)[0]
@@ -297,8 +332,10 @@ def handle_request(path, query_params):
         # Instead of returning, you can assign the result to a variable or process it further as needed
         output += filtered_csv
 
+
     else:
         return False
+
 
     return output
 

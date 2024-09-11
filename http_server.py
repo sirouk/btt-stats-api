@@ -17,6 +17,7 @@ import json
 subprocess.run(["python3", "-m", "pip", "install", "portalocker"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) # Ensure pandas is installed
 import portalocker
 import requests
+from dotenv import load_dotenv
 
 
 PORT = 41337
@@ -26,6 +27,12 @@ CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
 CACHE_FILE = "cache_state.json"
 PATHS_TO_SKIP = {'/favicon.ico'} # avoid these paths
 CACHE_DISABLED_PATHS = ['/sn19_metrics','/sn19_recent']  # Paths with caching disabled
+
+# Load environment variables
+load_dotenv()
+
+# Get hotkeys from environment variable
+HOTKEYS = os.getenv('HOTKEYS', '').split(',')
 
 
 class Server(socketserver.TCPServer):
@@ -228,60 +235,69 @@ def handle_request(path, query_params):
 
 
     elif path == '/sn19_metrics':
-
+        
         # Parse URL parameters
         fetch_file_date = query_params.get('fetchFileDate', [None])[0]
         date_from = query_params.get('dateFrom', [None])[0]
         date_to = query_params.get('dateTo', [None])[0]
         data_source = query_params.get('dataSource', [None])[0]
-        
+    
         # Construct the URL to fetch the CSV file
         csv_url = f"https://data.tauvision.ai/{fetch_file_date}_{data_source}.csv"
-        
+    
         # Fetch the CSV file from the URL
         try:
             response = requests.get(csv_url + f"?r={int(time.time())}")
             response.raise_for_status()  # Raise an error for bad status codes
         except requests.exceptions.RequestException as e:
-            pass
-        
+            return f"Error fetching CSV: {e}"
+    
         # Read the CSV data into a DataFrame
         csv_data = response.content.decode('utf-8')
         df = pd.read_csv(StringIO(csv_data))
-        
+    
         # Print the top and bottom of the DataFrame for debugging
         print("Top of the DataFrame:")
         print(df.head())
         print("Bottom of the DataFrame:")
         print(df.tail())
-        
+    
         # Convert date strings to datetime objects
         date_from = datetime.strptime(date_from, '%Y-%m-%d')
         date_to = datetime.strptime(date_to, '%Y-%m-%d') + timedelta(days=1) - timedelta(microseconds=1)
-        
+    
         # Ensure the 'created_at' column is parsed as datetime
         df['created_at'] = pd.to_datetime(df['created_at'], errors='coerce')
-
+    
         # Print the DataFrame after parsing dates for debugging
         print("DataFrame after parsing 'created_at' as datetime:")
         print(df.head())
-
+    
         # Debug: Print date range and min/max of created_at
         print(f"Filtering from {date_from} to {date_to}")
         print(f"Min created_at: {df['created_at'].min()}")
         print(f"Max created_at: {df['created_at'].max()}")
-
+    
         # Filter the DataFrame by the date range
         filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]
-
+    
+        # Filter the DataFrame to include only the specified hotkeys
+        filtered_df = filtered_df[filtered_df['miner_hotkey'].isin(HOTKEYS)]
+    
         # Print the filtered DataFrame for debugging
         print("Filtered DataFrame:")
         print(filtered_df.head())
         print("Filtered DataFrame Bottom:")
         print(filtered_df.tail())
-            
+    
+        # Select only the required columns
+        columns = ['id', 'axon_uid', 'miner_hotkey', 'validator_hotkey', 'task', 'declared_volume', 'consumed_volume', 
+                   'total_requests_made', 'requests_429', 'requests_500', 'period_score', 'created_at']
+        filtered_df = filtered_df[columns]
+    
         # Convert the filtered DataFrame back to CSV format
         filtered_csv = filtered_df.to_csv(index=False)
+
 
         output += filtered_csv
         

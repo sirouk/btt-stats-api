@@ -1,3 +1,6 @@
+# Ignore .env file
+.env
+
 ./cache_**
 ./cache_*
 cache_**

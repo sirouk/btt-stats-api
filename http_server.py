@@ -56,21 +56,6 @@ def trim_output_from_pattern(output, start_pattern):
     return ''
 
 
-def process_metagraph_line(line, netuid, subtensor, current_block, subnet_info):
-    parts = line.split()
-    if len(parts) > 0 and parts[0].isdigit():
-        uid = int(parts[0])
-        block_at_registration = int(str(subtensor.query_subtensor("BlockAtRegistration", None, [int(netuid), uid])))
-        immune_until = block_at_registration + subnet_info.immunity_period
-        immune = immune_until > current_block
-        if immune:
-            return f"{line}  {immune_until}"
-        else:
-            return f"{line}  "
-    else:
-        return f"{line}  ImmuneUntil"  # Add header for the new column
-
-
 def prettify_time(seconds):
     delta = timedelta(seconds=seconds)
     days = delta.days
@@ -139,41 +124,98 @@ def handle_request(path, query_params):
         netuids = query_params.get('netuid', [''])[0].split(',')
         sanitized_egrep_keys = [re.escape(key) for key in query_params.get('egrep', []) if re.match(r'^[a-zA-Z0-9]+$', key)]
         pattern = "|".join(sanitized_egrep_keys)
+        # print(pattern)
+        # quit()
 
         # Initialize subtensor connection
-        subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
-        current_block = subtensor.get_current_block()
+        try:
+            subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
+            current_block = subtensor.get_current_block()
+        except Exception as e:
+            print(f"Error connecting to subtensor network: {e}")
+            return "Connection Error"
+
+        resulting_lines = []  # Initialize outside the loop
 
         for netuid in netuids:
-            lines = []
+            netuid = netuid.strip()  # Remove any leading/trailing whitespace
             if re.match(r'^\d+$', netuid):
-                command = f"/usr/local/bin/btcli s metagraph --netuid={netuid} --subtensor.chain_endpoint ws://{subtensor_address}"
-                child = pexpect.spawn(command, dimensions=(500, 500))
-                child.expect(pexpect.EOF)
-                netuid_output = child.before.decode(errors='ignore')
-                netuid_output = clean_chars(netuid_output)
-                netuid_output = trim_output_from_pattern(netuid_output, "Metagraph")
+                netuid_int = int(netuid)
+                try:
+                    metagraph = subtensor.metagraph(netuid=netuid_int)
+                except Exception as e:
+                    print(f"Error fetching metagraph for netuid {netuid}: {e}")
+                    continue  # Skip to the next netuid
 
-                subnet_info: bt.SubnetInfo = subtensor.get_subnet_info(int(netuid))
+                # Extract the first AxonInfo entry
+                axon_ip, axon_port = None, None
+                if metagraph.axons and len(metagraph.axons) > 0:
+                    first_axon = metagraph.axons[0]
+                    if hasattr(first_axon, 'ip') and hasattr(first_axon, 'port'):
+                        axon_ip = first_axon.ip
+                        axon_port = first_axon.port
 
-                netuid_lines = netuid_output.splitlines()
-                for line in netuid_lines:
-                    if sanitized_egrep_keys and re.search(pattern, line):
-                        modified_line = process_metagraph_line(line, netuid, subtensor, current_block, subnet_info)
-                        lines.append(f"{netuid}  {modified_line}")
-                    elif not sanitized_egrep_keys:
-                        modified_line = process_metagraph_line(line, netuid, subtensor, current_block, subnet_info)
-                        lines.append(f"{netuid}  {modified_line}")
+                data = {
+                    'SUBNET': netuid_int,
+                    'UID': metagraph.uids,
+                    'STAKE()': metagraph.stake,
+                    'RANK': metagraph.ranks,
+                    'TRUST': metagraph.trust,
+                    'CONSENSUS': metagraph.consensus,
+                    'INCENTIVE': metagraph.incentive,
+                    'DIVIDENDS': metagraph.dividends,
+                    'EMISSION(ρ)': metagraph.emission,
+                    'VTRUST': metagraph.validator_trust,
+                    'VAL': metagraph.validator_permit,
+                    'UPDATED': metagraph.last_update,
+                    'ACTIVE': metagraph.active,
+                    # concatenate AXON_IP and AXON_PORT to form a single column
+                    # make sure to zip the two lists together
+                    'AXON': [f"{ip}:{port}" for ip, port in zip([axon_ip] * len(metagraph.uids), [axon_port] * len(metagraph.uids))],
+                    'HOTKEY': metagraph.hotkeys,
+                    'COLDKEY': metagraph.coldkeys
+                }
+
+                # Convert the dictionary to a DataFrame
+                netuid_lines = pd.DataFrame(data)
+                #print(netuid_lines)
+
+                # Process each row
+                for index, row in netuid_lines.iterrows():
+                    uid = str(row['UID'])
+
+                    # Apply regex search on uid or other fields as needed
+                    if uid and (re.search(pattern, str(row)) or (not sanitized_egrep_keys)):
+                        #print(f"Processing UID: {uid}")
+                        try:
+                            block_at_registration = int(str(subtensor.query_subtensor("BlockAtRegistration", None, [netuid_int, uid])))
+                            immune_until = block_at_registration + subtensor.immunity_period(netuid=netuid_int)
+                            immune = immune_until > current_block
+
+                            # Update the DataFrame by adding the immune status
+                            netuid_lines.at[index, 'IMMUNE'] = immune_until if immune else ''
+                        except Exception as e:
+                            print(f"Error processing UID {uid}: {e}")
+                            netuid_lines.at[index, 'IMMUNE'] = ''  # Or handle as appropriate
+                    else:
+                        # Drop the row if the UID does not match the pattern or is invalid
+                        netuid_lines.drop(index, inplace=True)
+
+                # Append the processed netuid_lines to resulting_lines
+                if not netuid_lines.empty:
+                    resulting_lines.append(netuid_lines)
             else:
-                return
+                print(f"Invalid netuid format: {netuid}")
+                continue  # Skip invalid netuid
 
-            netuid_output = '\n'.join(lines)
-            string_io_obj = StringIO(netuid_output)
-
-            df = pd.read_fwf(string_io_obj, colspecs='infer')
-
-            # Convert DataFrame to CSV string
-            output += df.to_csv(index=False)
+        if resulting_lines:
+            # Concatenate all DataFrames in the list
+            try:
+                df = pd.concat(resulting_lines, ignore_index=True)
+                # Convert DataFrame to CSV string
+                output += df.to_csv(index=False)
+            except Exception as e:
+                print(f"Error concatenating DataFrames: {e}")
 
 
     elif path == '/registrations':
@@ -244,6 +286,7 @@ def handle_request(path, query_params):
     
         # Construct the URL to fetch the CSV file
         csv_url = f"https://data.tauvision.ai/{fetch_file_date}_{data_source}.csv"
+        print(f"Fetching CSV from: {csv_url}")
     
         # Fetch the CSV file from the URL
         try:

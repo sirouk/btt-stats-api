@@ -18,6 +18,7 @@ subprocess.run(["python3", "-m", "pip", "install", "portalocker"], stdout=subpro
 import portalocker
 import requests
 from dotenv import load_dotenv
+from subnet_info import get_subnet_info
 
 
 PORT = 41337
@@ -92,31 +93,23 @@ def handle_request(path, query_params):
 
     elif path == '/subnet-list':
         # Run the subnet list command
-        command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{subtensor_address}"
-        child = pexpect.spawn(command, dimensions=(500, 500))
-        child.expect(pexpect.EOF)
-        cmd_output = child.before.decode(errors='ignore')
-        cmd_output = clean_chars(cmd_output)
-        cmd_output = trim_output_from_pattern(cmd_output, "Subnets")
-        lines = cmd_output.splitlines()[1:-1]
+        # command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{subtensor_address}"
+        # child = pexpect.spawn(command, dimensions=(500, 500))
+        # child.expect(pexpect.EOF)
+        # cmd_output = child.before.decode(errors='ignore')
+        # cmd_output = clean_chars(cmd_output)
+        # cmd_output = trim_output_from_pattern(cmd_output, "Subnets")
+        # lines = cmd_output.splitlines()[1:-1]
 
         # add a column to the end of the first line
-        lines[0] += "  WEIGHT"
+        # lines[0] += "  WEIGHT"
 
-        # connect to the subtensor chain
-        subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
+        # get the current block
+        df = get_subnet_info(subtensor_address)
 
-        #  for each line, take the first column and look up the subnet emission, using the key as the index
-        for i, line in enumerate(lines):
-            # skip the first row, since it's the header
-            if i > 0:
-                subnet_id = line.split()[0]
-                weight = get_subnet_weight(subnet_id, subtensor)
-                lines[i] += f"  {weight}"
-
-        cmd_output = '\n'.join(lines)
-        string_io_obj = StringIO(cmd_output)
-        df = pd.read_fwf(string_io_obj, colspecs='infer')
+        # cmd_output = '\n'.join(lines)
+        # string_io_obj = StringIO(cmd_output)
+        # df = pd.read_fwf(string_io_obj, colspecs='infer')
         output += df.to_csv(index=False)
 
 

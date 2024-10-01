@@ -77,13 +77,14 @@ def handle_request(path, query_params):
 
     if path == '/wallet-balance':
         # Run the subnet list command
-        command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --subtensor.chain_endpoint ws://{subtensor_address}"
+        command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --wallet-path ~/.bittensor/wallets/ --subtensor.chain_endpoint ws://{subtensor_address}"
         child = pexpect.spawn(command, dimensions=(500, 500))
         child.expect(pexpect.EOF)
         cmd_output = child.before.decode(errors='ignore')
         cmd_output = clean_chars(cmd_output)
-        cmd_output = trim_output_from_pattern(cmd_output, "Wallet Coldkey Balances")
-        lines = cmd_output.splitlines()[1:-1]
+        cmd_output = trim_output_from_pattern(cmd_output, "Wallet Coldkey Balance")
+        lines = cmd_output.splitlines()[2:-1]
+        lines = [line for i, line in enumerate(lines) if i != 1 and i != len(lines) - 1]
 
         cmd_output = '\n'.join(lines)
         string_io_obj = StringIO(cmd_output)

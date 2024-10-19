@@ -218,7 +218,7 @@ def handle_request(path, query_params):
         log_pattern = re.compile(r'btt_register_sn(\d+)_ck(\d+)-hk(\d+)(?:_\d{4}-\d{2}-\d{2})?\.log')
         log_directory = os.path.expanduser("~/logs/bittensor")
         timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| \{Attempting SN registration')
-
+        ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
 
         for filename in os.listdir(log_directory):
             match = log_pattern.match(filename)
@@ -228,8 +228,10 @@ def handle_request(path, query_params):
                 
                 with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
                     lines = file.readlines()
+                    
+                cleaned_lines = [ansi_escape.sub('', line) for line in lines]
 
-                for i, line in enumerate(lines):
+                for i, line in enumerate(cleaned_lines):
                     if '[32mRegistered' in line:
 
                         timestamp = None

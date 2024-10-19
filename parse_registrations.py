@@ -11,8 +11,6 @@ log_pattern = re.compile(r'btt_register_sn(\d+)_ck(\d+)-hk(\d+)\.log')
 # CSV Headers - Including 'CreationTime' for the log file creation timestamp
 csv_headers = ['Subnet', 'ColdKey', 'HotKey', 'Cost', 'Line', 'ModifiedTime', 'Filename']
 
-ansi_escape = re.compile(r'\x1b\[[0-9;]*[a-zA-Z]')
-
 def load_existing_entries():
     existing_entries = set()
     if os.path.exists(output_csv_path):
@@ -29,25 +27,19 @@ def parse_log_file(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
         lines = file.readlines()
 
-    # Strip ANSI codes from all lines to ensure accurate matching
-    cleaned_lines = [ansi_escape.sub('', line) for line in lines]
-
-    for i, line in enumerate(cleaned_lines):
+    for i, line in enumerate(lines):
         if '[32mRegistered' in line:
-            for j in range(i - 1, -1, -1):
-                if "The cost to register by recycle is" in cleaned_lines[j]:
-                    cost_line = cleaned_lines[j]
+            for j in range(i-1, -1, -1):
+                if "The cost to register by recycle is" in lines[j]:
+                    cost_line = lines[j]
                     break
             else:
                 cost_line = "Cost not found"
 
-            # Extract the cost value after the 'τ' symbol
             cost_match = re.search(r'τ([\d.]+)', cost_line)
             cost = cost_match.group(1) if cost_match else "N/A"
-            entries.append((cost, i + 1))
-
+            entries.append((cost, i+1))
     return entries
-
 
 def append_to_csv(subnet, coldkey, hotkey, entries, filepath, existing_entries):
     file_stats = os.stat(filepath)
@@ -56,6 +48,7 @@ def append_to_csv(subnet, coldkey, hotkey, entries, filepath, existing_entries):
     filename = os.path.basename(filepath)
 
     with open(output_csv_path, 'a', newline='', encoding='utf-8') as csvfile:
+        print(f"Processing {filename}...")
         writer = csv.DictWriter(csvfile, fieldnames=csv_headers)
         for cost, line in entries:
             new_entry = {

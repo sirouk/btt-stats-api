@@ -218,12 +218,21 @@ def handle_request(path, query_params):
         log_pattern = re.compile(r'btt_register_sn(\d+)_ck(\d+)-hk(\d+)(?:_\d{4}-\d{2}-\d{2})?\.log')
         log_directory = os.path.expanduser("~/logs/bittensor")
         timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| \{Attempting SN registration')
-
+        
+        # Calculate the cutoff date for log files (30 days ago)
+        cutoff_date = datetime.now() - timedelta(days=30)
+    
         for filename in os.listdir(log_directory):
             match = log_pattern.match(filename)
             if match:
                 subnet, coldkey, hotkey = match.groups()
                 filepath = os.path.join(log_directory, filename)
+                
+                # Skip files modified before the cutoff date
+                file_stats = os.stat(filepath)
+                modified_time = datetime.fromtimestamp(file_stats.st_mtime)
+                if modified_time < cutoff_date:
+                    continue  # Skip this file
                 
                 with open(filepath, 'r', encoding='utf-8', errors='replace') as file:
                     lines = file.readlines()

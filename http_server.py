@@ -219,8 +219,8 @@ def handle_request(path, query_params):
         log_directory = os.path.expanduser("~/logs/bittensor")
         timestamp_pattern = re.compile(r'(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) \| \{Attempting SN registration')
         
-        # Calculate the cutoff date for log files (30 days ago)
-        cutoff_date = datetime.now() - timedelta(days=30)
+        # Calculate the cutoff date for log files (90 days ago)
+        cutoff_date = datetime.now() - timedelta(days=90)
     
         for filename in os.listdir(log_directory):
             match = log_pattern.match(filename)

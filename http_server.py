@@ -82,13 +82,51 @@ def handle_request(path, query_params):
         child.expect(pexpect.EOF)
         cmd_output = child.before.decode(errors='ignore')
         cmd_output = clean_chars(cmd_output)
+        
+        # Find the section starting with the balance table
         cmd_output = trim_output_from_pattern(cmd_output, "Wallet Coldkey Balance")
-        lines = cmd_output.splitlines()[2:-1]
-        lines = [line for i, line in enumerate(lines) if i != 1 and i != len(lines) - 1]
+        
+        # Split into lines and filter out header lines and separator lines
+        lines = cmd_output.splitlines()
+        data_lines = []
+        for line in lines:
+            # Skip empty lines, headers, and separator lines
+            if not line.strip() or 'Network:' in line or 'Wallet Name' in line or '━' in line or 'Total Balance' in line:
+                continue
+            # Keep only lines that start with 'coldkey-' or have actual balance data
+            if line.strip().startswith('coldkey-'):
+                data_lines.append(line)
 
-        cmd_output = '\n'.join(lines)
+        # Join the filtered lines back together
+        cmd_output = '\n'.join(data_lines)
+        
+        # Parse into DataFrame
         string_io_obj = StringIO(cmd_output)
         df = pd.read_fwf(string_io_obj, colspecs='infer')
+        
+        print("Initial DataFrame:")
+        print(df.head())
+        print("\nColumn types:")
+        print(df.dtypes)
+        
+        # Clean up column names if needed
+        if not df.empty:
+            df.columns = ['Wallet_Name', 'Coldkey_Address', 'Free_Balance', 'Staked_Balance', 'Total_Balance']
+            
+            # Convert all columns to string first
+            for col in df.columns:
+                df[col] = df[col].astype(str)
+            
+            # Remove the 'τ' symbol from balance columns and convert to numeric
+            for col in ['Free_Balance', 'Staked_Balance', 'Total_Balance']:
+                df[col] = df[col].str.replace('τ', '').str.strip()
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+            
+            print("\nFinal DataFrame:")
+            print(df.head())
+            print("\nFinal column types:")
+            print(df.dtypes)
+
         output += df.to_csv(index=False)
 
 

@@ -10,9 +10,11 @@ sudo apt install npm -y
 sudo npm install pm2 -g
 pm2 update
 
-sudo apt install python3 python3-pip
-python3 -m pip install bittensor --upgrade
-source ~/.bashrc
+sudo apt install python3 python3-pip python3-venv -y
+
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Installation / Deploy:
@@ -20,7 +22,7 @@ source ~/.bashrc
 cd ~
 git clone https://github.com/sirouk/btt-stats-api
 cd ~/btt-stats-api
-
+source .venv/bin/activate
 pm2 start http_server.py --name btt-stats-api --interpreter python3
 ```
 

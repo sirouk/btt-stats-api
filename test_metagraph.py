@@ -19,7 +19,7 @@ import portalocker
 import requests
 from dotenv import load_dotenv
 
-
+BLOCKTIME = 12
 PORT = 41337
 subtensor_address = "127.0.0.1:9944"
 CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
@@ -41,7 +41,8 @@ HOTKEYS = os.getenv('HOTKEYS', '').split(',')
 
 # mock query_params from /metagraph?netuid=4%2C8%2C18%2C19%2C23%2C34%2C35&egrep=TRUST&egrep=5CqSeSc&egrep=5FjacWn&egrep=5FW5SqG&egrep=5DNn9ZM&egrep=5CAXk8H&egrep=5CqichJ
 query_params = {
-    'netuid': ['4,8,18,19,23,34,35'],
+    #'netuid': ['4,8,18,19,23,34,35'],
+    'netuid': ['19'],
     'egrep': ['5CqSeSc', '5FjacWn', '5FW5SqG', '5DNn9ZM', '5CAXk8H', '5CqichJ']
 }
 
@@ -71,8 +72,19 @@ def test_metagraph(query_params):
             netuid_int = int(netuid)
             try:
                 metagraph = subtensor.metagraph(netuid=netuid_int)
-                #print(metagraph)
+                #print(metagraph.__dict__)
                 #quit()
+                
+                # Calculate tempo and daily rewards
+                tempo_blocks: int = metagraph.tempo
+                tempo_seconds: int = tempo_blocks * BLOCKTIME
+                seconds_in_day: int = 60 * 60 * 24
+                tempos_per_day: int = int(seconds_in_day / tempo_seconds)
+                
+                # Get pool info for alpha token price
+                pool = metagraph.pool
+                alpha_token_price = pool.tao_in / pool.alpha_in
+                
             except Exception as e:
                 print(f"Error fetching metagraph for netuid {netuid}: {e}")
                 continue  # Skip to the next netuid
@@ -104,7 +116,12 @@ def test_metagraph(query_params):
                 'ACTIVE': metagraph.active,
                 'AXON': [f"{axon.ip}:{axon.port}" for axon in metagraph.axons[:n_uids]],  # Ensure same length as uids
                 'HOTKEY': metagraph.hotkeys,
-                'COLDKEY': metagraph.coldkeys
+                'COLDKEY': metagraph.coldkeys,
+                'ALPHA_STAKE': metagraph.alpha_stake,
+                'TAO_STAKE': metagraph.tao_stake,
+                'EMISSION': metagraph.emission,
+                'DAILY_REWARDS_ALPHA': [float(tempos_per_day * emission) for emission in metagraph.emission],
+                'DAILY_REWARDS_TAO': [float(tempos_per_day * emission * alpha_token_price) for emission in metagraph.emission]
             }
             
             # Debug print lengths
@@ -136,7 +153,13 @@ def test_metagraph(query_params):
                 if uid and (re.search(pattern, str(row)) or (not sanitized_egrep_keys)):
                     #print(f"Processing UID: {uid}")
                     try:
-                        block_at_registration = int(str(subtensor.query_subtensor("BlockAtRegistration", None, [netuid_int, uid])))
+                        block_at_registration = subtensor.query_subtensor("BlockAtRegistration", None, [netuid_int, uid])
+                        # Extract value from BittensorScaleType if needed
+                        if hasattr(block_at_registration, 'value'):
+                            block_at_registration = block_at_registration.value
+                        else:
+                            block_at_registration = int(str(block_at_registration))
+                            
                         immune_until = block_at_registration + subtensor.immunity_period(netuid=netuid_int)
                         immune = immune_until > current_block
 

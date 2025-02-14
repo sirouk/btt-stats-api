@@ -1,0 +1,3 @@
+pexpect
+python-dotenv
+bittensor==9.0.0

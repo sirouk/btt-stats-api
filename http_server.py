@@ -131,33 +131,24 @@ def handle_request(path, query_params):
 
 
     elif path == '/subnet-list':
-        # Run the subnet list command
-        # command = f"/usr/local/bin/btcli s list --subtensor.chain_endpoint ws://{subtensor_address}"
-        # child = pexpect.spawn(command, dimensions=(500, 500))
-        # child.expect(pexpect.EOF)
-        # cmd_output = child.before.decode(errors='ignore')
-        # cmd_output = clean_chars(cmd_output)
-        # cmd_output = trim_output_from_pattern(cmd_output, "Subnets")
-        # lines = cmd_output.splitlines()[1:-1]
-
-        # add a column to the end of the first line
-        # lines[0] += "  WEIGHT"
-
-        # get the current block
-        df = get_subnet_info(subtensor_address)
-
-        # cmd_output = '\n'.join(lines)
-        # string_io_obj = StringIO(cmd_output)
-        # df = pd.read_fwf(string_io_obj, colspecs='infer')
-        output += df.to_csv(index=False)
+        try:
+            # Get subnet info using the updated method
+            df = get_subnet_info(subtensor_address)
+            if df is not None and not df.empty:
+                output += df.to_csv(index=False)
+                return output
+            else:
+                print("No subnet data returned")
+                return "No subnet data available"
+        except Exception as e:
+            print(f"Error getting subnet info: {e}")
+            return f"Error getting subnet info: {e}"
 
 
     elif path == '/metagraph':
         netuids = query_params.get('netuid', [''])[0].split(',')
         sanitized_egrep_keys = [re.escape(key) for key in query_params.get('egrep', []) if re.match(r'^[a-zA-Z0-9]+$', key)]
         pattern = "|".join(sanitized_egrep_keys)
-        # print(pattern)
-        # quit()
 
         # Initialize subtensor connection
         try:
@@ -187,30 +178,48 @@ def handle_request(path, query_params):
                         axon_ip = first_axon.ip
                         axon_port = first_axon.port
 
+                # First get the length of uids for validation
+                n_uids = len(metagraph.uids)
+                
                 data = {
-                    'SUBNET': netuid_int,
+                    'SUBNET': [netuid_int] * n_uids,  # Repeat subnet for each UID
                     'UID': metagraph.uids,
-                    'STAKE()': metagraph.stake,
+                    'STAKE': metagraph.stake,
                     'RANK': metagraph.ranks,
                     'TRUST': metagraph.trust,
                     'CONSENSUS': metagraph.consensus,
                     'INCENTIVE': metagraph.incentive,
                     'DIVIDENDS': metagraph.dividends,
-                    'EMISSION(ρ)': metagraph.emission,
+                    'EMISSION': metagraph.emission,
                     'VTRUST': metagraph.validator_trust,
-                    'VAL': metagraph.validator_permit,
+                    'VPERMIT': metagraph.validator_permit,
                     'UPDATED': metagraph.last_update,
                     'ACTIVE': metagraph.active,
-                    # concatenate AXON_IP and AXON_PORT to form a single column
-                    # make sure to zip the two lists together
-                    'AXON': [f"{ip}:{port}" for ip, port in zip([axon_ip] * len(metagraph.uids), [axon_port] * len(metagraph.uids))],
+                    'AXON': [f"{axon.ip}:{axon.port}" for axon in metagraph.axons[:n_uids]],  # Ensure same length as uids
                     'HOTKEY': metagraph.hotkeys,
                     'COLDKEY': metagraph.coldkeys
                 }
-
+                
+                # Debug print lengths
+                print(f"Processing netuid: {netuid_int}")
+                print("Array lengths:")
+                for key, value in data.items():
+                    print(f"{key}: {len(value) if hasattr(value, '__len__') else 1}")
+                
                 # Convert the dictionary to a DataFrame
                 netuid_lines = pd.DataFrame(data)
-                #print(netuid_lines)
+                
+                # Format numeric columns
+                numeric_columns = ['STAKE', 'RANK', 'TRUST', 'CONSENSUS', 'INCENTIVE', 'DIVIDENDS', 'EMISSION', 'VTRUST']
+                for col in numeric_columns:
+                    if col in netuid_lines.columns:
+                        netuid_lines[col] = netuid_lines[col].apply(lambda x: f"{float(x):.8f}" if pd.notnull(x) else x)
+
+                # Format boolean columns
+                boolean_columns = ['ACTIVE', 'VPERMIT']
+                for col in boolean_columns:
+                    if col in netuid_lines.columns:
+                        netuid_lines[col] = netuid_lines[col].astype(bool)
 
                 # Process each row
                 for index, row in netuid_lines.iterrows():
@@ -218,9 +227,14 @@ def handle_request(path, query_params):
 
                     # Apply regex search on uid or other fields as needed
                     if uid and (re.search(pattern, str(row)) or (not sanitized_egrep_keys)):
-                        #print(f"Processing UID: {uid}")
                         try:
-                            block_at_registration = int(str(subtensor.query_subtensor("BlockAtRegistration", None, [netuid_int, uid])))
+                            block_at_registration = subtensor.query_subtensor("BlockAtRegistration", None, [netuid_int, uid])
+                            # Extract the value from BittensorScaleType
+                            if hasattr(block_at_registration, 'value'):
+                                block_at_registration = block_at_registration.value
+                            else:
+                                block_at_registration = int(str(block_at_registration))
+                                
                             immune_until = block_at_registration + subtensor.immunity_period(netuid=netuid_int)
                             immune = immune_until > current_block
 
@@ -228,7 +242,7 @@ def handle_request(path, query_params):
                             netuid_lines.at[index, 'IMMUNE'] = immune_until if immune else ''
                         except Exception as e:
                             print(f"Error processing UID {uid}: {e}")
-                            netuid_lines.at[index, 'IMMUNE'] = ''  # Or handle as appropriate
+                            netuid_lines.at[index, 'IMMUNE'] = ''  # Empty string for errors
                     else:
                         # Drop the row if the UID does not match the pattern or is invalid
                         netuid_lines.drop(index, inplace=True)

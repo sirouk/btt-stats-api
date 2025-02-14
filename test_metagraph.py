@@ -71,6 +71,8 @@ def test_metagraph(query_params):
             netuid_int = int(netuid)
             try:
                 metagraph = subtensor.metagraph(netuid=netuid_int)
+                #print(metagraph)
+                #quit()
             except Exception as e:
                 print(f"Error fetching metagraph for netuid {netuid}: {e}")
                 continue  # Skip to the next netuid
@@ -83,30 +85,48 @@ def test_metagraph(query_params):
                     axon_ip = first_axon.ip
                     axon_port = first_axon.port
 
+            # First get the length of uids for validation
+            n_uids = len(metagraph.uids)
+            
             data = {
-                'SUBNET': netuid_int,
+                'SUBNET': [netuid_int] * n_uids,  # Repeat subnet for each UID
                 'UID': metagraph.uids,
-                'STAKE()': metagraph.stake,
+                'STAKE': metagraph.stake,
                 'RANK': metagraph.ranks,
                 'TRUST': metagraph.trust,
                 'CONSENSUS': metagraph.consensus,
                 'INCENTIVE': metagraph.incentive,
                 'DIVIDENDS': metagraph.dividends,
-                'EMISSION(ρ)': metagraph.emission,
+                'EMISSION': metagraph.emission,
                 'VTRUST': metagraph.validator_trust,
-                'VAL': metagraph.validator_permit,
+                'VPERMIT': metagraph.validator_permit,
                 'UPDATED': metagraph.last_update,
                 'ACTIVE': metagraph.active,
-                # 'AXON_IP': [axon_ip] * len(metagraph.uids),
-                # 'AXON_PORT': [axon_port] * len(metagraph.uids),
-                'AXON': [f"{ip}:{port}" for ip, port in zip([axon_ip] * len(metagraph.uids), [axon_port] * len(metagraph.uids))],
+                'AXON': [f"{axon.ip}:{axon.port}" for axon in metagraph.axons[:n_uids]],  # Ensure same length as uids
                 'HOTKEY': metagraph.hotkeys,
                 'COLDKEY': metagraph.coldkeys
             }
-
+            
+            # Debug print lengths
+            print(f"Processing netuid: {netuid_int}")
+            print("Array lengths:")
+            for key, value in data.items():
+                print(f"{key}: {len(value) if hasattr(value, '__len__') else 1}")
+            
             # Convert the dictionary to a DataFrame
             netuid_lines = pd.DataFrame(data)
-            #print(netuid_lines)
+            
+            # Format numeric columns
+            numeric_columns = ['STAKE', 'RANK', 'TRUST', 'CONSENSUS', 'INCENTIVE', 'DIVIDENDS', 'EMISSION', 'VTRUST']
+            for col in numeric_columns:
+                if col in netuid_lines.columns:
+                    netuid_lines[col] = netuid_lines[col].apply(lambda x: f"{float(x):.8f}" if pd.notnull(x) else x)
+
+            # Format boolean columns
+            boolean_columns = ['ACTIVE', 'VPERMIT']
+            for col in boolean_columns:
+                if col in netuid_lines.columns:
+                    netuid_lines[col] = netuid_lines[col].astype(bool)
 
             # Process each row
             for index, row in netuid_lines.iterrows():

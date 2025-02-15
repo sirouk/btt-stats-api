@@ -72,14 +72,11 @@ def test_metagraph(query_params):
             netuid_int = int(netuid)
             try:
                 metagraph = subtensor.metagraph(netuid=netuid_int)
-                #print(metagraph.__dict__)
-                #quit()
                 
-                # Calculate tempo and daily rewards
-                tempo_blocks: int = metagraph.tempo
-                tempo_seconds: int = tempo_blocks * BLOCKTIME
-                seconds_in_day: int = 60 * 60 * 24
-                tempos_per_day: int = int(seconds_in_day / tempo_seconds)
+                # Calculate daily rewards using new formula
+                # emissions is alpha per 360 blocks, so calculate daily earnings
+                daily_blocks = (60 * 60 * 24) / BLOCKTIME  # Number of blocks per day
+                tempo_multiplier = daily_blocks / metagraph.tempo
                 
                 # Get pool info for alpha token price
                 pool = metagraph.pool
@@ -120,8 +117,8 @@ def test_metagraph(query_params):
                 'ALPHA_STAKE': metagraph.alpha_stake,
                 'TAO_STAKE': metagraph.tao_stake,
                 'EMISSION': metagraph.emission,
-                'DAILY_REWARDS_ALPHA': [float(tempos_per_day * emission) for emission in metagraph.emission],
-                'DAILY_REWARDS_TAO': [float(tempos_per_day * emission * alpha_token_price) for emission in metagraph.emission]
+                'DAILY_REWARDS_ALPHA': [float(emission * tempo_multiplier) for emission in metagraph.emission],
+                'DAILY_REWARDS_TAO': [float(emission * tempo_multiplier * alpha_token_price) for emission in metagraph.emission]
             }
             
             # Debug print lengths

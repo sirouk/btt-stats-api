@@ -16,3 +16,6 @@ last_*
 ./btt_unstake_*.log
 btt_unstake_**.log
 btt_unstake_*.log
+*.pyc
+__pycache__/*
+*.log

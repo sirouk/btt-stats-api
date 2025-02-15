@@ -328,7 +328,7 @@ def handle_request(path, query_params):
                                 if timestamp_match:
                                     timestamp = timestamp_match.group(1)
                             if "The cost to register by recycle is" in lines[j]:
-                                cost_match = re.search(r'τ([\d.]+)', lines[j])
+                                cost_match = re.search(r'τ\s*([\d.]+)', lines[j])
                                 if cost_match:
                                     cost = cost_match.group(1)
                                     break

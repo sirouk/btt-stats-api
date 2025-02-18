@@ -94,39 +94,21 @@ def handle_request(path, query_params):
             # Skip empty lines, headers, and separator lines
             if not line.strip() or 'Network:' in line or 'Wallet Name' in line or '━' in line or 'Total Balance' in line:
                 continue
-            # Keep only lines that start with 'coldkey-' or have actual balance data
+            # Keep only lines that start with 'coldkey-' and have balance data
             if line.strip().startswith('coldkey-'):
-                data_lines.append(line)
+                # Clean up the line and extract data
+                parts = [p for p in line.strip().split() if p]
+                if len(parts) >= 3:  # We need at least wallet name, address, and balance
+                    wallet_name = parts[0]
+                    coldkey = parts[1]
+                    # Convert balance to float, removing any τ symbol
+                    free_balance = float(parts[-1].replace('τ', '').strip())
+                    staked_balance = 0.0  # Set staked balance to 0
+                    total_balance = free_balance  # Total is same as free balance since staked is 0
+                    data_lines.append([wallet_name, coldkey, free_balance, staked_balance, total_balance])
 
-        # Join the filtered lines back together
-        cmd_output = '\n'.join(data_lines)
-        
-        # Parse into DataFrame
-        string_io_obj = StringIO(cmd_output)
-        df = pd.read_fwf(string_io_obj, colspecs='infer')
-        
-        print("Initial DataFrame:")
-        print(df.head())
-        print("\nColumn types:")
-        print(df.dtypes)
-        
-        # Clean up column names if needed
-        if not df.empty:
-            df.columns = ['Wallet_Name', 'Coldkey_Address', 'Free_Balance', 'Staked_Balance', 'Total_Balance']
-            
-            # Convert all columns to string first
-            for col in df.columns:
-                df[col] = df[col].astype(str)
-            
-            # Remove the 'τ' symbol from balance columns and convert to numeric
-            for col in ['Free_Balance', 'Staked_Balance', 'Total_Balance']:
-                df[col] = df[col].str.replace('τ', '').str.strip()
-                df[col] = pd.to_numeric(df[col], errors='coerce')
-            
-            print("\nFinal DataFrame:")
-            print(df.head())
-            print("\nFinal column types:")
-            print(df.dtypes)
+        # Create DataFrame from the cleaned data
+        df = pd.DataFrame(data_lines, columns=['Wallet_Name', 'Coldkey_Address', 'Free_Balance', 'Staked_Balance', 'Total_Balance'])
 
         output += df.to_csv(index=False)
 

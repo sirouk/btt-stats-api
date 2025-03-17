@@ -237,8 +237,8 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
     resize_requests = []
     
     if end_row >= current_max_rows:
-        # Add buffer rows (20% more than needed, minimum of 10 extra rows)
-        new_row_count = max(end_row + 10, int(end_row * 1.2))
+        # Add buffer rows (1% more than needed, minimum of 10 extra rows)
+        new_row_count = max(end_row + 10, int(end_row * 1.01))
         resize_requests.append({
             "updateSheetProperties": {
                 "properties": {
@@ -254,8 +254,8 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
         resize_needed = True
     
     if end_col_index > current_max_cols:
-        # Add buffer columns (20% more than needed, minimum of 3 extra columns)
-        new_col_count = max(end_col_index + 3, int(end_col_index * 1.2))
+        # Add buffer columns (1% more than needed, minimum of 3 extra columns)
+        new_col_count = max(end_col_index + 3, int(end_col_index * 1.01))
         resize_requests.append({
             "updateSheetProperties": {
                 "properties": {

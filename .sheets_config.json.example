@@ -77,6 +77,8 @@
     "sheet_name": "SN19_Metrics",
     "start_cell": "A1",
     "include_header": true,
+    "append_mode": true,
+    "max_rows_limit": 1000,
     "formula": {
       "type": "python",
       "text": "f\"{row['created_at'].strftime('%a, %b %d, %Y')} ({(datetime.now() - row['created_at']).days} days ago)\"",
@@ -95,6 +97,8 @@
     "sheet_name": "SN19_Recent",
     "start_cell": "A1",
     "include_header": true,
+    "append_mode": true,
+    "max_rows_limit": 500,
     "formula": {
       "type": "python",
       "text": "f\"{row['created_at'].strftime('%H:%M:%S')} on {row['created_at'].strftime('%Y-%m-%d')}\"",
@@ -110,10 +114,27 @@
     "sheet_name": "DateExamples",
     "start_cell": "A1",
     "include_header": true,
+    "append_mode": true,
+    "max_rows_limit": 100,
     "formula": {
       "type": "python",
       "text": "{\"iso\": datetime.now().isoformat(), \"rfc\": datetime.now().strftime('%a, %d %b %Y %H:%M:%S %z'), \"readable\": datetime.now().strftime('%B %d, %Y at %I:%M %p'), \"custom\": datetime.now().strftime('%Y-%m-%d %H:%M:%S')}[idx % 4 == 0 and \"iso\" or idx % 4 == 1 and \"rfc\" or idx % 4 == 2 and \"readable\" or \"custom\"]",
       "position": -1
+    },
+    "params": {}
+  },
+  "historical_balance": {
+    "data_type": "wallet_balance",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "HistoricalBalance",
+    "start_cell": "A1",
+    "include_header": true,
+    "append_mode": true,
+    "max_rows_limit": 2000,
+    "formula": {
+      "type": "python",
+      "text": "f\"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",
+      "position": 0
     },
     "params": {}
   }

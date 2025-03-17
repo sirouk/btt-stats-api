@@ -68,7 +68,7 @@ def serialize_for_sheets(val):
         return int(val)  # Convert numpy int to Python int
     return str(val)  # Convert everything else to string
 
-def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include_header=True, handle_existing_filters=False, formula=None, formula_position=0):
+def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include_header=True, handle_existing_filters=False, formula=None, formula_position=0, append_mode=False, max_rows_limit=None):
     """Update a Google Sheet with DataFrame data, preserving formatting and handling filters
     
     Args:
@@ -81,6 +81,8 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
         formula (str or callable): Optional formula to add to a column. Use {0} as row placeholder if string,
                                or pass a function that takes row_index as parameter.
         formula_position (int): Position to place formula column (0=first, -1=last, n=nth column)
+        append_mode (bool): If True, append data to the end of the sheet instead of replacing
+        max_rows_limit (int): Maximum number of rows to keep in the sheet when in append mode
     """
     service = setup_sheets_api()
     sheet = service.spreadsheets()
@@ -121,8 +123,52 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
     # Calculate the end column considering the formula column
     total_cols = df.shape[1] + (1 if formula is not None else 0)
     end_col = chr(ord(start_col) + total_cols - 1)
+    
+    if append_mode:
+        # Get the last row with data
+        last_row_response = sheet.values().get(
+            spreadsheetId=spreadsheet_id,
+            range=f'{sheet_name}!{start_col}:{start_col}',
+            valueRenderOption='UNFORMATTED_VALUE'
+        ).execute()
+        
+        last_row = len(last_row_response.get('values', []))
+        if last_row == 0:
+            last_row = 1
+            
+        # If we have a max rows limit, calculate how many rows to keep
+        if max_rows_limit is not None:
+            new_rows = df.shape[0] + (1 if include_header else 0)
+            total_rows = last_row + new_rows
+            if total_rows > max_rows_limit:
+                # Calculate how many rows to delete from the top
+                rows_to_delete = total_rows - max_rows_limit
+                if rows_to_delete > 0:
+                    # Delete rows from the top
+                    delete_request = {
+                        "requests": [
+                            {
+                                "deleteDimension": {
+                                    "range": {
+                                        "sheetId": sheet_id,
+                                        "dimension": "ROWS",
+                                        "startIndex": 0,
+                                        "endIndex": rows_to_delete
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                    sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=delete_request).execute()
+                    print(f"Deleted {rows_to_delete} rows from the top to maintain {max_rows_limit} row limit")
+                    # Update last_row after deletion
+                    last_row -= rows_to_delete
+        
+        # Set the start row to the last row + 1
+        start_row = last_row + 1
+    
     end_row = start_row + df.shape[0] + (1 if include_header else 0) - 1
-    data_range = f'{sheet_name}!{start_cell}:{end_col}{end_row}'
+    data_range = f'{sheet_name}!{start_col}{start_row}:{end_col}{end_row}'
 
     # Convert DataFrame to list of lists, ensuring all values are properly serialized
     values = []
@@ -189,64 +235,66 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
 
     print(f"{result.get('updatedCells')} cells updated with new data.")
 
-    # Fetch the format of the first data row
-    first_data_row = start_row + (1 if include_header else 0)
-    format_range = f'{sheet_name}!{start_col}{first_data_row}:{end_col}{first_data_row}'
-    format_response = sheet.get(spreadsheetId=spreadsheet_id, ranges=format_range, fields='sheets/data/rowData/values/userEnteredFormat').execute()
-    
-    if 'sheets' in format_response and format_response['sheets']:
-        row_data = format_response['sheets'][0]['data'][0]['rowData']
-        if row_data and 'values' in row_data[0]:
-            # Prepare format copy request
-            format_copy_request = {
+    # Only apply formatting if not in append mode
+    if not append_mode:
+        # Fetch the format of the first data row
+        first_data_row = start_row + (1 if include_header else 0)
+        format_range = f'{sheet_name}!{start_col}{first_data_row}:{end_col}{first_data_row}'
+        format_response = sheet.get(spreadsheetId=spreadsheet_id, ranges=format_range, fields='sheets/data/rowData/values/userEnteredFormat').execute()
+        
+        if 'sheets' in format_response and format_response['sheets']:
+            row_data = format_response['sheets'][0]['data'][0]['rowData']
+            if row_data and 'values' in row_data[0]:
+                # Prepare format copy request
+                format_copy_request = {
+                    "requests": [
+                        {
+                            "copyPaste": {
+                                "source": {
+                                    "sheetId": sheet_id,
+                                    "startRowIndex": first_data_row - 1,
+                                    "endRowIndex": first_data_row,
+                                    "startColumnIndex": ord(start_col) - ord('A'),
+                                    "endColumnIndex": ord(end_col) - ord('A') + 1
+                                },
+                                "destination": {
+                                    "sheetId": sheet_id,
+                                    "startRowIndex": first_data_row,
+                                    "endRowIndex": end_row,
+                                    "startColumnIndex": ord(start_col) - ord('A'),
+                                    "endColumnIndex": ord(end_col) - ord('A') + 1
+                                },
+                                "pasteType": "PASTE_FORMAT",
+                                "pasteOrientation": "NORMAL"
+                            }
+                        }
+                    ]
+                }
+
+                # Apply format to new rows
+                sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=format_copy_request).execute()
+                print(f"Applied format to new rows from {first_data_row + 1} to {end_row}")
+
+        # Clear everything below the new data, respecting sheet limits
+        if end_row < max_rows:
+            clear_request = {
                 "requests": [
                     {
-                        "copyPaste": {
-                            "source": {
+                        "updateCells": {
+                            "range": {
                                 "sheetId": sheet_id,
-                                "startRowIndex": first_data_row - 1,
-                                "endRowIndex": first_data_row,
+                                "startRowIndex": end_row,
+                                "endRowIndex": max_rows,
                                 "startColumnIndex": ord(start_col) - ord('A'),
                                 "endColumnIndex": ord(end_col) - ord('A') + 1
                             },
-                            "destination": {
-                                "sheetId": sheet_id,
-                                "startRowIndex": first_data_row,
-                                "endRowIndex": end_row,
-                                "startColumnIndex": ord(start_col) - ord('A'),
-                                "endColumnIndex": ord(end_col) - ord('A') + 1
-                            },
-                            "pasteType": "PASTE_FORMAT",
-                            "pasteOrientation": "NORMAL"
+                            "fields": "userEnteredValue"
                         }
                     }
                 ]
             }
-
-            # Apply format to new rows
-            sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=format_copy_request).execute()
-            print(f"Applied format to new rows from {first_data_row + 1} to {end_row}")
-
-    # Clear everything below the new data, respecting sheet limits
-    if end_row < max_rows:
-        clear_request = {
-            "requests": [
-                {
-                    "updateCells": {
-                        "range": {
-                            "sheetId": sheet_id,
-                            "startRowIndex": end_row,
-                            "endRowIndex": max_rows,
-                            "startColumnIndex": ord(start_col) - ord('A'),
-                            "endColumnIndex": ord(end_col) - ord('A') + 1
-                        },
-                        "fields": "userEnteredValue"
-                    }
-                }
-            ]
-        }
-        sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=clear_request).execute()
-        print(f"Cleared rows from {end_row + 1} to {max_rows} in columns {start_col} to {end_col}")
+            sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=clear_request).execute()
+            print(f"Cleared rows from {end_row + 1} to {max_rows} in columns {start_col} to {end_col}")
 
     # If there was an existing filter, copy its criteria
     if handle_existing_filters and existing_filter:

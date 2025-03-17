@@ -21,3 +21,4 @@ __pycache__/*
 *.log
 .sheets_config.json
 service-account.json
+last_updates.json

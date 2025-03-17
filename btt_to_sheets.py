@@ -420,6 +420,70 @@ def get_sn19_recent_data(hist_hours=72):
     
     return filtered_df
 
+def get_asset_price(symbol):
+    """Get asset price from Kucoin API
+    
+    Args:
+        symbol (str): Trading pair symbol, e.g., 'TAO-USDT'
+        
+    Returns:
+        pandas.DataFrame: DataFrame with price data
+    """
+    try:
+        url = f"https://api.kucoin.com/api/v1/market/orderbook/level1?symbol={symbol}"
+        logger.info(f"Fetching price data for {symbol} from: {url}")
+        
+        # Add a timestamp to prevent caching (use & for additional parameters)
+        timestamp_param = f"&t={int(time.time())}"
+        response = requests.get(url + timestamp_param)
+        response.raise_for_status()
+        
+        # Check if response has content before parsing JSON
+        if not response.content:
+            logger.error(f"Empty response from Kucoin API for {symbol}")
+            return pd.DataFrame()
+            
+        # Try to parse the JSON response
+        try:
+            data = response.json()
+        except Exception as json_error:
+            logger.error(f"Failed to parse JSON response: {json_error}, Response content: {response.content[:200]}")
+            return pd.DataFrame()
+            
+        # Validate the response structure
+        if not isinstance(data, dict):
+            logger.error(f"Unexpected response format from Kucoin API: {type(data)}")
+            return pd.DataFrame()
+            
+        if data.get('code') != '200000' or 'data' not in data:
+            logger.error(f"Error response from Kucoin API: {data}")
+            return pd.DataFrame()
+            
+        # Extract price from the response
+        price_data = data.get('data', {})
+        if not isinstance(price_data, dict):
+            logger.error(f"Unexpected price data format: {type(price_data)}")
+            return pd.DataFrame()
+            
+        price = price_data.get('price')
+        
+        if not price:
+            logger.error(f"No price data found in response: {data}")
+            return pd.DataFrame()
+            
+        # Create a DataFrame with a single column for the price
+        df = pd.DataFrame([{'price': price}])
+        logger.info(f"Retrieved price for {symbol}: {price}")
+        
+        return df
+        
+    except requests.exceptions.RequestException as req_error:
+        logger.error(f"Request error fetching asset price for {symbol}: {req_error}")
+        return pd.DataFrame()
+    except Exception as e:
+        logger.error(f"Error fetching asset price for {symbol}: {e}")
+        return pd.DataFrame()
+
 def update_all_sheets(config, task_name=None):
     """Update all Google Sheets with data from various sources
     
@@ -495,6 +559,15 @@ def update_all_sheets(config, task_name=None):
             elif data_type == 'sn19_recent':
                 hist_hours = params.get('hours', 72)
                 df = get_sn19_recent_data(hist_hours)
+                
+            elif data_type == 'asset_price':
+                symbol = params.get('symbol')
+                if symbol:
+                    df = get_asset_price(symbol)
+                else:
+                    logger.error(f"Missing 'symbol' parameter for asset_price")
+                    results[task_name] = False
+                    continue
                 
             else:
                 logger.error(f"Unknown data type: {data_type}")

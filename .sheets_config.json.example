@@ -14,6 +14,40 @@
     },
     "params": {}
   },
+  "asset_price": {
+    "data_type": "asset_price",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "CryptoPrice",
+    "start_cell": "A1",
+    "include_header": true,
+    "refresh_interval_minutes": 5,
+    "formula": {
+      "type": "python",
+      "text": "f\"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",
+      "position": 1
+    },
+    "params": {
+      "symbol": "TAO-USDT"
+    }
+  },
+  "asset_price_history": {
+    "data_type": "asset_price",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "PriceHistory",
+    "start_cell": "A2",
+    "include_header": false,
+    "append_mode": true,
+    "max_rows_limit": 10000,
+    "refresh_interval_minutes": 15,
+    "formula": {
+      "type": "python",
+      "text": "f\"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",
+      "position": 0
+    },
+    "params": {
+      "symbol": "TAO-USDT"
+    }
+  },
   "subnet_list": {
     "data_type": "subnet_list",
     "spreadsheet_id": "YOUR_SPREADSHEET_ID",

@@ -671,17 +671,39 @@ def main():
         logger.info("Please edit this file with your Google Sheets information and run again.")
         return 1
     
-    # Update all sheets or specific function
-    results = update_all_sheets(config, args.function)
+    # Function to run one iteration of updates
+    def run_updates():
+        results = update_all_sheets(config, args.function)
+        success = all(results.values())
+        if success:
+            logger.info("All sheets updated successfully!")
+        else:
+            logger.warning(f"Some sheets failed to update: {results}")
+        return success
     
-    # Check results
-    success = all(results.values())
-    if success:
-        logger.info("All sheets updated successfully!")
-    else:
-        logger.warning(f"Some sheets failed to update: {results}")
+    # If a specific function is specified, run once and exit
+    if args.function:
+        success = run_updates()
+        return 0 if success else 1
     
-    return 0 if success else 1
+    # Otherwise, run continuously with a 5-minute sleep interval
+    logger.info("Starting continuous mode with 5-minute intervals between updates")
+    try:
+        while True:
+            success = run_updates()
+            if not success:
+                logger.error("Update cycle failed, will retry in 5 minutes")
+            
+            # Sleep for 5 minutes before next update
+            logger.info("Sleeping for 5 minutes before next update...")
+            time.sleep(300)  # 300 seconds = 5 minutes
+            
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt, stopping continuous updates")
+        return 0
+    except Exception as e:
+        logger.error(f"Unexpected error in continuous mode: {e}", exc_info=True)
+        return 1
 
 if __name__ == "__main__":
     exit(main()) 

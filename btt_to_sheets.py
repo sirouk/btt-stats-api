@@ -576,6 +576,10 @@ def update_all_sheets(config, function_filter=None):
                     logger.warning(f"Unknown formula type: {formula_type}")
                     formula = None
             
+            # Get append mode and max rows limit settings
+            append_mode = task_config.get('append_mode', False)
+            max_rows_limit = task_config.get('max_rows_limit')
+            
             # Update Google Sheet
             update_google_sheet(
                 spreadsheet_id=spreadsheet_id,
@@ -585,7 +589,9 @@ def update_all_sheets(config, function_filter=None):
                 include_header=task_config.get('include_header', True),
                 handle_existing_filters=task_config.get('handle_existing_filters', False),
                 formula=formula,
-                formula_position=formula_position
+                formula_position=formula_position,
+                append_mode=append_mode,
+                max_rows_limit=max_rows_limit
             )
             
             logger.info(f"Successfully updated {task_name}")

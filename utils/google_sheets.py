@@ -144,31 +144,97 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
                 # Calculate how many rows to delete from the top
                 rows_to_delete = total_rows - max_rows_limit
                 if rows_to_delete > 0:
-                    # Delete rows from the top
-                    delete_request = {
-                        "requests": [
-                            {
-                                "deleteDimension": {
-                                    "range": {
-                                        "sheetId": sheet_id,
-                                        "dimension": "ROWS",
-                                        "startIndex": 0,
-                                        "endIndex": rows_to_delete
+                    # Extract the first data row from start_cell (e.g., "A3" -> 3)
+                    first_data_row = int(start_cell[1:]) if start_cell[1:].isdigit() else 1
+                    
+                    # Header rows are all rows before the first data row (0-indexed)
+                    header_rows_count = first_data_row - 1
+                    
+                    # Never delete header rows - start deletions from the first data row
+                    start_delete_index = header_rows_count
+                    
+                    # Make sure we don't delete all data rows - keep at least one
+                    max_deletable_rows = last_row - header_rows_count - 1  # -1 to keep at least one data row
+                    if max_deletable_rows <= 0:
+                        print(f"Cannot delete rows - not enough existing data. Keeping existing data.")
+                    else:
+                        # Delete at most max_deletable_rows rows
+                        rows_to_delete = min(rows_to_delete, max_deletable_rows)
+                        # Delete rows starting from first data row
+                        delete_request = {
+                            "requests": [
+                                {
+                                    "deleteDimension": {
+                                        "range": {
+                                            "sheetId": sheet_id,
+                                            "dimension": "ROWS",
+                                            "startIndex": start_delete_index,
+                                            "endIndex": start_delete_index + rows_to_delete
+                                        }
                                     }
                                 }
-                            }
-                        ]
-                    }
-                    sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=delete_request).execute()
-                    print(f"Deleted {rows_to_delete} rows from the top to maintain {max_rows_limit} row limit")
-                    # Update last_row after deletion
-                    last_row -= rows_to_delete
+                            ]
+                        }
+                        sheet.batchUpdate(spreadsheetId=spreadsheet_id, body=delete_request).execute()
+                        print(f"Deleted {rows_to_delete} rows starting from row {start_delete_index + 1} to maintain {max_rows_limit} row limit")
+                        # Update last_row after deletion
+                        last_row -= rows_to_delete
         
         # Set the start row to the last row + 1
         start_row = last_row + 1
     
     end_row = start_row + df.shape[0] + (1 if include_header else 0) - 1
     data_range = f'{sheet_name}!{start_col}{start_row}:{end_col}{end_row}'
+
+    # Check if we need to resize the grid to accommodate our data
+    sheet_props = sheet_metadata['sheets'][0]['properties']
+    current_max_rows = sheet_props['gridProperties']['rowCount']
+    current_max_cols = sheet_props['gridProperties']['columnCount']
+    
+    end_col_index = ord(end_col) - ord('A') + 1
+    
+    # If our data would exceed current grid dimensions, resize the grid
+    if end_row > current_max_rows or end_col_index > current_max_cols:
+        resize_requests = []
+        
+        if end_row > current_max_rows:
+            # Add some buffer rows to avoid frequent resizing
+            new_row_count = end_row + 20
+            resize_requests.append({
+                "updateSheetProperties": {
+                    "properties": {
+                        "sheetId": sheet_id,
+                        "gridProperties": {
+                            "rowCount": new_row_count
+                        }
+                    },
+                    "fields": "gridProperties.rowCount"
+                }
+            })
+            print(f"Resizing sheet from {current_max_rows} to {new_row_count} rows")
+            
+        if end_col_index > current_max_cols:
+            # Add some buffer columns
+            new_col_count = end_col_index + 5
+            resize_requests.append({
+                "updateSheetProperties": {
+                    "properties": {
+                        "sheetId": sheet_id,
+                        "gridProperties": {
+                            "columnCount": new_col_count
+                        }
+                    },
+                    "fields": "gridProperties.columnCount"
+                }
+            })
+            print(f"Resizing sheet from {current_max_cols} to {new_col_count} columns")
+            
+        if resize_requests:
+            sheet.batchUpdate(
+                spreadsheetId=spreadsheet_id,
+                body={"requests": resize_requests}
+            ).execute()
+            print("Sheet grid resized to accommodate new data")
 
     # Convert DataFrame to list of lists, ensuring all values are properly serialized
     values = []

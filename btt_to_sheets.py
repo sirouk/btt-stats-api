@@ -614,65 +614,66 @@ def main():
             logger.error("Google Sheets authentication failed!")
             return 1
     
-    # Load configuration
-    try:
-        with open(args.config, 'r') as f:
-            config = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError) as e:
-        logger.error(f"Error loading configuration: {e}")
-        logger.info("Creating example configuration file...")
-        
-        # Create example configuration
-        example_config = {
-            "wallet_balance": {
-                "data_type": "wallet_balance",
-                "spreadsheet_id": "YOUR_SPREADSHEET_ID",
-                "sheet_name": "WalletBalance",
-                "start_cell": "A1",
-                "include_header": True,
-                "handle_existing_filters": False,
-                "formula": {
-                    "type": "formula",
-                    "text": "=SUM(D{0}+E{0})",
-                    "position": -1
+    def load_config():
+        """Load configuration from file"""
+        try:
+            with open(args.config, 'r') as f:
+                return json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            logger.error(f"Error loading configuration: {e}")
+            logger.info("Creating example configuration file...")
+            
+            # Create example configuration
+            example_config = {
+                "wallet_balance": {
+                    "data_type": "wallet_balance",
+                    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+                    "sheet_name": "WalletBalance",
+                    "start_cell": "A1",
+                    "include_header": True,
+                    "handle_existing_filters": False,
+                    "formula": {
+                        "type": "formula",
+                        "text": "=SUM(D{0}+E{0})",
+                        "position": -1
+                    },
+                    "params": {}
                 },
-                "params": {}
-            },
-            "subnet_list": {
-                "data_type": "subnet_list",
-                "spreadsheet_id": "YOUR_SPREADSHEET_ID",
-                "sheet_name": "SubnetList",
-                "start_cell": "A1",
-                "include_header": True,
-                "params": {}
-            },
-            "metagraph_sn1": {
-                "data_type": "metagraph",
-                "spreadsheet_id": "YOUR_SPREADSHEET_ID",
-                "sheet_name": "Metagraph_SN1",
-                "start_cell": "A1",
-                "include_header": True,
-                "formula": {
-                    "type": "python",
-                    "text": "\"Active\" if row[\"TRUST\"] > 0 else \"Inactive\"",
-                    "position": -1
+                "subnet_list": {
+                    "data_type": "subnet_list",
+                    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+                    "sheet_name": "SubnetList",
+                    "start_cell": "A1",
+                    "include_header": True,
+                    "params": {}
                 },
-                "params": {
-                    "netuids": "1",
-                    "egrep_keys": []
+                "metagraph_sn1": {
+                    "data_type": "metagraph",
+                    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+                    "sheet_name": "Metagraph_SN1",
+                    "start_cell": "A1",
+                    "include_header": True,
+                    "formula": {
+                        "type": "python",
+                        "text": "\"Active\" if row[\"TRUST\"] > 0 else \"Inactive\"",
+                        "position": -1
+                    },
+                    "params": {
+                        "netuids": "1",
+                        "egrep_keys": []
+                    }
                 }
             }
-        }
-        
-        with open(args.config, 'w') as f:
-            json.dump(example_config, f, indent=2)
             
-        logger.info(f"Example configuration created at {args.config}")
-        logger.info("Please edit this file with your Google Sheets information and run again.")
-        return 1
+            with open(args.config, 'w') as f:
+                json.dump(example_config, f, indent=2)
+                
+            logger.info(f"Example configuration created at {args.config}")
+            logger.info("Please edit this file with your Google Sheets information and run again.")
+            return None
     
     # Function to run one iteration of updates
-    def run_updates():
+    def run_updates(config):
         results = update_all_sheets(config, args.function)
         success = all(results.values())
         if success:
@@ -681,16 +682,28 @@ def main():
             logger.warning(f"Some sheets failed to update: {results}")
         return success
     
+    # Load initial configuration
+    config = load_config()
+    if config is None:
+        return 1
+    
     # If a specific function is specified, run once and exit
     if args.function:
-        success = run_updates()
+        success = run_updates(config)
         return 0 if success else 1
     
     # Otherwise, run continuously with a 5-minute sleep interval
     logger.info("Starting continuous mode with 5-minute intervals between updates")
     try:
         while True:
-            success = run_updates()
+            # Reload configuration at the start of each loop
+            config = load_config()
+            if config is None:
+                logger.error("Failed to load configuration, will retry in 5 minutes")
+                time.sleep(300)
+                continue
+                
+            success = run_updates(config)
             if not success:
                 logger.error("Update cycle failed, will retry in 5 minutes")
             

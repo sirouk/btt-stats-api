@@ -6,6 +6,7 @@
     "start_cell": "A1",
     "include_header": true,
     "handle_existing_filters": false,
+    "refresh_interval_minutes": 10,
     "formula": {
       "type": "formula",
       "text": "=SUM(C{0}+D{0})",
@@ -19,10 +20,27 @@
     "sheet_name": "SubnetList",
     "start_cell": "A1",
     "include_header": true,
+    "refresh_interval_minutes": 15,
     "formula": {
       "type": "python",
       "text": "f\"Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",
       "position": -1
+    },
+    "params": {}
+  },
+  "subnet_list_history": {
+    "data_type": "subnet_list",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "SubnetHistoryLog",
+    "start_cell": "A2",
+    "include_header": false,
+    "append_mode": true,
+    "max_rows_limit": 100000,
+    "refresh_interval_minutes": 30,
+    "formula": {
+      "type": "python",
+      "text": "f\"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",
+      "position": 0
     },
     "params": {}
   },
@@ -32,14 +50,15 @@
     "sheet_name": "Metagraph_SN1",
     "start_cell": "A1",
     "include_header": true,
+    "refresh_interval_minutes": 15,
     "formula": {
       "type": "python",
       "text": "\"Active\" if row[\"TRUST\"] > 0.5 else \"Inactive\" if row[\"TRUST\"] > 0 else \"Offline\"",
       "position": -1
     },
     "params": {
-      "netuid": "1",
-      "egrep": []
+      "netuids": "1",
+      "egrep_keys": []
     }
   },
   "metagraph_sn19": {
@@ -48,14 +67,15 @@
     "sheet_name": "Metagraph_SN19",
     "start_cell": "A1",
     "include_header": true,
+    "refresh_interval_minutes": 45,
     "formula": {
       "type": "python",
       "text": "f\"Last Updated: {(datetime.now() - timedelta(seconds=int(row['UPDATED']))).strftime('%Y-%m-%d %H:%M:%S')}\"",
       "position": -1
     },
     "params": {
-      "netuid": "19",
-      "egrep": []
+      "netuids": "19",
+      "egrep_keys": "5.....,5.....,5....."
     }
   },
   "registrations": {
@@ -64,6 +84,7 @@
     "sheet_name": "Registrations",
     "start_cell": "A1",
     "include_header": true,
+    "refresh_interval_minutes": 30,
     "formula": {
       "type": "python",
       "text": "f\"SN{row['Subnet']}-{row['Cost']} TAO\" if float(row['Cost']) > 0 else \"Free Registration\"",
@@ -79,6 +100,7 @@
     "include_header": true,
     "append_mode": true,
     "max_rows_limit": 1000,
+    "refresh_interval_minutes": 30,
     "formula": {
       "type": "python",
       "text": "f\"{row['created_at'].strftime('%a, %b %d, %Y')} ({(datetime.now() - row['created_at']).days} days ago)\"",
@@ -99,6 +121,7 @@
     "include_header": true,
     "append_mode": true,
     "max_rows_limit": 500,
+    "refresh_interval_minutes": 15,
     "formula": {
       "type": "python",
       "text": "f\"{row['created_at'].strftime('%H:%M:%S')} on {row['created_at'].strftime('%Y-%m-%d')}\"",
@@ -131,6 +154,7 @@
     "include_header": true,
     "append_mode": true,
     "max_rows_limit": 2000,
+    "refresh_interval_minutes": 20,
     "formula": {
       "type": "python",
       "text": "f\"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\"",

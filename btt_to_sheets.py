@@ -426,6 +426,9 @@ def update_all_sheets(config, task_name=None):
     Args:
         config: Dictionary with configuration for all tasks
         task_name: Optional string with task name to run exclusively
+        
+    Returns:
+        Dictionary with task names as keys and boolean success values
     """
     results = {}
     
@@ -656,15 +659,10 @@ def main():
                 "wallet_balance": {
                     "data_type": "wallet_balance",
                     "spreadsheet_id": "YOUR_SPREADSHEET_ID",
-                    "sheet_name": "WalletBalance",
+                    "sheet_name": "YOUR_SHEET_NAME",
                     "start_cell": "A1",
                     "include_header": True,
-                    "handle_existing_filters": False,
-                    "formula": {
-                        "type": "formula",
-                        "text": "=SUM(D{0}+E{0})",
-                        "position": -1
-                    },
+                    "refresh_interval_minutes": 10,
                     "params": {}
                 },
                 "subnet_list": {
@@ -681,11 +679,7 @@ def main():
                     "sheet_name": "Metagraph_SN1",
                     "start_cell": "A1",
                     "include_header": True,
-                    "formula": {
-                        "type": "python",
-                        "text": "\"Active\" if row[\"TRUST\"] > 0 else \"Inactive\"",
-                        "position": -1
-                    },
+                    "refresh_interval_minutes": 10,
                     "params": {
                         "netuids": "1",
                         "egrep_keys": []
@@ -702,12 +696,81 @@ def main():
     
     # Function to run one iteration of updates
     def run_updates(config):
-        results = update_all_sheets(config, args.task)
-        success = all(results.values())
-        if success:
-            logger.info("All sheets updated successfully!")
+        # Store last update times in a JSON file to persist between restarts
+        last_updates_file = 'last_updates.json'
+        last_updates = {}
+        
+        # Load existing last update times if file exists
+        if os.path.exists(last_updates_file):
+            try:
+                with open(last_updates_file, 'r') as f:
+                    last_updates = json.load(f)
+            except json.JSONDecodeError:
+                logger.error(f"Error reading {last_updates_file}, starting with empty update times")
+        
+        current_time = datetime.now()
+        results = {}
+        tasks_to_update = []
+        
+        # Check which tasks need to be updated based on refresh interval
+        for task_name, task_config in config.items():
+            # Get refresh interval with default of 5 minutes if not specified
+            refresh_interval = task_config.get('refresh_interval_minutes', 5)
+            
+            # Convert to timedelta
+            refresh_delta = timedelta(minutes=refresh_interval)
+            
+            # Get last update time
+            last_update_str = last_updates.get(task_name)
+            needs_update = True
+            
+            if last_update_str:
+                try:
+                    last_update = datetime.fromisoformat(last_update_str)
+                    time_since_update = current_time - last_update
+                    needs_update = time_since_update >= refresh_delta
+                    
+                    if not needs_update:
+                        time_remaining = refresh_delta - time_since_update
+                        logger.info(f"Skipping task {task_name}: last updated {time_since_update.total_seconds()/60:.1f} mins ago, "
+                                  f"will update in {time_remaining.total_seconds()/60:.1f} mins")
+                except (ValueError, TypeError):
+                    logger.warning(f"Invalid last update time for {task_name}: {last_update_str}")
+            
+            if needs_update:
+                tasks_to_update.append(task_name)
+        
+        # If running a specific task, only update that one regardless of refresh interval
+        if args.task and args.task in config:
+            tasks_to_update = [args.task]
+            logger.info(f"Forcing update of specific task: {args.task}")
+        
+        if not tasks_to_update:
+            logger.info("No tasks need updating at this time")
+            return True
+            
+        # Update only tasks that need updating
+        filtered_config = {task: config[task] for task in tasks_to_update}
+        update_results = update_all_sheets(filtered_config)
+        
+        # Update last_updates for tasks that were processed
+        for task_name, success in update_results.items():
+            if success:
+                last_updates[task_name] = current_time.isoformat()
+        
+        # Save updated timestamps
+        with open(last_updates_file, 'w') as f:
+            json.dump(last_updates, f)
+        
+        success = all(update_results.values())
+        if success and update_results:
+            logger.info(f"All sheets updated successfully! Updated: {', '.join(update_results.keys())}")
+        elif not update_results:
+            logger.info("No sheets were updated in this cycle")
         else:
-            logger.warning(f"Some sheets failed to update: {results}")
+            logger.warning(f"Some sheets failed to update: {update_results}")
+        
+        results.update(update_results)
         return success
     
     # Load initial configuration
@@ -721,23 +784,24 @@ def main():
         return 0 if success else 1
     
     # Otherwise, run continuously with a 5-minute sleep interval
-    logger.info("Starting continuous mode with 5-minute intervals between updates")
+    logger.info("Starting continuous mode with regular check intervals")
     try:
         while True:
             # Reload configuration at the start of each loop
             config = load_config()
             if config is None:
-                logger.error("Failed to load configuration, will retry in 5 minutes")
-                time.sleep(300)
+                logger.error("Failed to load configuration, will retry in 1 minute")
+                time.sleep(60)
                 continue
                 
             success = run_updates(config)
             if not success:
-                logger.error("Update cycle failed, will retry in 5 minutes")
+                logger.error("Update cycle had errors, will check again in 1 minute")
             
-            # Sleep for 5 minutes before next update
-            logger.info("Sleeping for 5 minutes before next update...")
-            time.sleep(300)  # 300 seconds = 5 minutes
+            # Sleep for a shorter interval to check more frequently
+            # This allows us to honor shorter refresh intervals more precisely
+            logger.info("Sleeping for 1 minute before checking for updates again...")
+            time.sleep(60)  # 60 seconds = 1 minute
             
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, stopping continuous updates")

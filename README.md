@@ -118,6 +118,16 @@ You can specify a different configuration file:
 python btt_to_sheets.py --config my_custom_config.json
 ```
 
+### Run a Specific Function Only
+
+To run only one specific function from your configuration:
+
+```bash
+python btt_to_sheets.py --function wallet_balance
+```
+
+This will only process the "wallet_balance" entry from your configuration file, ignoring all others.
+
 ### Scheduling Regular Updates
 
 To schedule automatic updates, add a cron job:
@@ -141,7 +151,119 @@ Each entry in the configuration file supports these options:
 - `start_cell`: Cell where data should start (default: "A1")
 - `include_header`: Whether to include column headers (default: true)
 - `handle_existing_filters`: Whether to preserve existing filters in the sheet (default: false)
+- `formula`: Optional configuration for adding a formula column to the sheet:
+  - `type`: The type of formula to use ("formula" for Google Sheets formulas or "python" for Python code)
+  - `text`: The formula to add (use `{0}` as a placeholder for the row number with formula type, or reference row data with Python type)
+  - `position`: Where to place the formula column (0=first column, -1=last column, or specific column number)
 - `params`: Additional parameters specific to the data type
+
+### Formula Examples
+
+You can add custom formulas to your sheets that reference the data in each row. There are two types of formulas supported:
+
+#### 1. Google Sheets Formula Type
+
+```json
+"wallet_balance": {
+  "data_type": "wallet_balance",
+  "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+  "sheet_name": "WalletBalance",
+  "formula": {
+    "type": "formula",
+    "text": "=SUM(C{0}+D{0})",
+    "position": 5
+  }
+}
+```
+
+In this example:
+- The formula type is "formula", which means it will be inserted as a standard Google Sheets formula
+- A formula column will be added at position 5 (6th column, as it's zero-based)
+- Each row will have a formula that sums the values in columns C and D for that row
+- The `{0}` in the formula will be replaced with the actual row number
+
+#### 2. Python Code Formula Type
+
+```json
+"metagraph_sn1": {
+  "data_type": "metagraph",
+  "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+  "sheet_name": "Metagraph_SN1",
+  "formula": {
+    "type": "python",
+    "text": "\"Active\" if row[\"TRUST\"] > 0.5 else \"Inactive\"",
+    "position": -1
+  }
+}
+```
+
+In this example:
+- The formula type is "python", which means Python code will be executed to generate the cell value
+- The Python code has access to:
+  - `row`: The pandas Series object containing the row data (access columns by name)
+  - `idx`: The current row index (1-based, matching Google Sheets row numbers)
+- The result of the Python expression will be converted to a string and inserted as a static value
+- This allows for complex data processing using Python's full capabilities
+- The Python code is executed when updating the sheet, not in Google Sheets itself
+
+More Python formula examples:
+
+```json
+// Format a date from row data
+"text": "row[\"created_at\"].strftime(\"%b %d, %Y at %H:%M\")"
+
+// Do calculations with numeric values
+"text": "f\"{(row[\"consumed_volume\"] / row[\"declared_volume\"] * 100):.2f}%\""
+
+// Create conditional labels
+"text": "\"High\" if row[\"STAKE\"] > 1000 else \"Medium\" if row[\"STAKE\"] > 100 else \"Low\""
+
+// Generate a hyperlink
+"text": "f\"https://dashboard.example.com/neuron/{row['HOTKEY']}\""
+```
+
+#### Datetime Formatting Examples
+
+Python formulas are especially useful for formatting dates and times. Here are some examples:
+
+```json
+// Format current date and time in standard format
+"text": "datetime.now().strftime('%Y-%m-%d %H:%M:%S')"
+
+// Format date from a row with customization
+"text": "row['created_at'].strftime('%A, %B %d, %Y at %I:%M %p')"
+
+// Calculate time ago
+"text": "f\"{(datetime.now() - row['created_at']).days} days ago\""
+
+// Format relative date from another field (like 'UPDATED' in metagraph)
+"text": "f\"Updated {(datetime.now() - timedelta(seconds=int(row['UPDATED']))).strftime('%Y-%m-%d %H:%M:%S')}\""
+
+// Format with timezone
+"text": "datetime.now().astimezone().strftime('%Y-%m-%d %H:%M:%S %Z')"
+
+// Parse string date and reformat
+"text": "datetime.strptime(row['Timestamp'], '%Y-%m-%d %H:%M:%S').strftime('%d/%m/%Y')"
+
+// Conditionally format dates
+"text": "row['created_at'].strftime('%H:%M:%S') if (datetime.now() - row['created_at']).days < 1 else row['created_at'].strftime('%b %d')"
+```
+
+Common date format codes:
+- `%Y`: 4-digit year (e.g., 2023)
+- `%m`: Month as zero-padded number (01-12)
+- `%d`: Day as zero-padded number (01-31)
+- `%H`: Hour in 24-hour format (00-23)
+- `%M`: Minute as zero-padded number (00-59)
+- `%S`: Second as zero-padded number (00-59)
+- `%I`: Hour in 12-hour format (01-12)
+- `%p`: AM/PM
+- `%a`: Abbreviated weekday name (Sun, Mon, ...)
+- `%A`: Full weekday name (Sunday, Monday, ...)
+- `%b`: Abbreviated month name (Jan, Feb, ...)
+- `%B`: Full month name (January, February, ...)
+
+You can also add a formula at the end of all columns by setting `"position": -1`.
 
 ## Available Data Types
 

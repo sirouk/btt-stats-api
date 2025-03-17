@@ -77,8 +77,9 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
         df (pandas.DataFrame): DataFrame containing the data to upload
         start_cell (str): Cell where data should start (e.g., 'A1')
         include_header (bool): Whether to include the DataFrame column headers
-        handle_existing_filters (bool): Whether to preserve existing filters
-        formula (str): Optional formula to add to a column. Use {0} as row placeholder.
+        handle_existing_filters (bool): Whether to preserve existing filters in the sheet
+        formula (str or callable): Optional formula to add to a column. Use {0} as row placeholder if string,
+                               or pass a function that takes row_index as parameter.
         formula_position (int): Position to place formula column (0=first, -1=last, n=nth column)
     """
     service = setup_sheets_api()
@@ -140,11 +141,30 @@ def update_google_sheet(spreadsheet_id, sheet_name, df, start_cell='A1', include
         values.append(header_row)
     
     # Process data rows
-    for i, (_, row) in enumerate(df.iterrows(), start=start_row):
+    for idx, (_, row) in enumerate(df.iterrows()):
         row_values = [serialize_for_sheets(val) for val in row]
         
         if formula is not None:
-            formula_cell = formula.format(i)
+            # Calculate the actual row number in the sheet (accounting for header)
+            # This is used for both formula string formatting and as input to formula functions
+            sheet_row = start_row + idx + (1 if include_header else 0)
+            
+            # Determine the formula value based on its type
+            if callable(formula):
+                # If formula is a function, call it with the row index
+                try:
+                    formula_cell = formula(sheet_row)
+                except Exception as e:
+                    print(f"Error executing formula function for row {sheet_row}: {e}")
+                    formula_cell = f"ERROR: {str(e)}"
+            else:
+                # Otherwise, treat it as a string template and format it
+                try:
+                    formula_cell = formula.format(sheet_row)
+                except Exception as e:
+                    print(f"Error formatting formula for row {sheet_row}: {e}")
+                    formula_cell = f"ERROR: {str(e)}"
+                    
             # Insert formula at the specified position
             if formula_position == 0:
                 row_values = [formula_cell] + row_values

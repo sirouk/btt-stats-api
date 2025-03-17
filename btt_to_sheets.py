@@ -123,6 +123,7 @@ def get_subnet_list_data():
 def get_metagraph_data(netuids, egrep_keys=None):
     """Get metagraph information for specified subnet IDs"""
     if not netuids:
+        logger.error("No netuids provided")
         return pd.DataFrame()
         
     if isinstance(netuids, str):
@@ -131,14 +132,18 @@ def get_metagraph_data(netuids, egrep_keys=None):
     if egrep_keys is None:
         egrep_keys = []
     
+    logger.info(f"Processing netuids: {netuids}")
     sanitized_egrep_keys = [re.escape(key) for key in egrep_keys if re.match(r'^[a-zA-Z0-9]+$', key)]
     pattern = "|".join(sanitized_egrep_keys)
+    logger.info(f"Using pattern: {pattern[:100]}..." if len(pattern) > 100 else f"Using pattern: {pattern}")
 
     # Initialize subtensor connection
     subtensor = None
     try:
+        logger.info(f"Connecting to subtensor at ws://{subtensor_address}")
         subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
         current_block = subtensor.get_current_block()
+        logger.info(f"Connected to subtensor, current block: {current_block}")
     except Exception as e:
         logger.error(f"Error connecting to subtensor network: {e}")
         return pd.DataFrame()
@@ -151,7 +156,9 @@ def get_metagraph_data(netuids, egrep_keys=None):
             if re.match(r'^\d+$', netuid):
                 netuid_int = int(netuid)
                 try:
+                    logger.info(f"Fetching metagraph for netuid {netuid_int}")
                     metagraph = subtensor.metagraph(netuid=netuid_int)
+                    logger.info(f"Metagraph for netuid {netuid_int} has {len(metagraph.uids)} UIDs")
                     
                     # Calculate daily rewards using new formula
                     # emissions is alpha per 360 blocks, so calculate daily earnings
@@ -413,9 +420,23 @@ def get_sn19_recent_data(hist_hours=72):
     
     return filtered_df
 
-def update_all_sheets(config):
-    """Update all Google Sheets with data from various sources"""
+def update_all_sheets(config, function_filter=None):
+    """Update all Google Sheets with data from various sources
+    
+    Args:
+        config: Dictionary with configuration for all tasks
+        function_filter: Optional string with task name to run exclusively
+    """
     results = {}
+    
+    # Filter configuration if specific function is requested
+    if function_filter:
+        if function_filter in config:
+            config = {function_filter: config[function_filter]}
+            logger.info(f"Running only function: {function_filter}")
+        else:
+            logger.error(f"Function '{function_filter}' not found in configuration!")
+            return {function_filter: False}
     
     for task_name, task_config in config.items():
         logger.info(f"Processing task: {task_name}")
@@ -443,9 +464,15 @@ def update_all_sheets(config):
                 df = get_subnet_list_data()
                 
             elif data_type == 'metagraph':
-                netuids = params.get('netuid', '').split(',')
-                egrep_keys = params.get('egrep', [])
+                netuids = params.get('netuids', '').split(',')
+                egrep_keys = params.get('egrep_keys', [])
+                # Split egrep_keys into a list if it's a comma-separated string
+                if isinstance(egrep_keys, str):
+                    egrep_keys = egrep_keys.split(',')
+                logger.info(f"Calling get_metagraph_data with netuids={netuids}, egrep_keys length={len(egrep_keys)}")
                 df = get_metagraph_data(netuids, egrep_keys)
+                if df is None or df.empty:
+                    logger.error(f"get_metagraph_data returned empty DataFrame with netuids={netuids}")
                 
             elif data_type == 'registrations':
                 df = get_registrations_data()
@@ -477,6 +504,78 @@ def update_all_sheets(config):
                 results[task_name] = False
                 continue
                 
+            # Get formula configuration if present
+            formula_config = task_config.get('formula', {})
+            formula_text = formula_config.get('text')
+            formula_position = formula_config.get('position', 0)
+            formula_type = formula_config.get('type', 'formula')  # Default to formula type
+            
+            # Process formula based on type
+            formula = None
+            if formula_text:
+                if formula_type == 'formula':
+                    # Standard formula that will be applied as is
+                    formula = formula_text
+                elif formula_type == 'python':
+                    # Python code to execute for each row
+                    # This is advanced functionality that executes Python code
+                    # A lambda will be created that takes row data and returns a value
+                    try:
+                        # Create a safe function from the python code
+                        # The function will receive both row data and idx as parameters
+                        # We'll create a closure that captures the DataFrame
+                        
+                        # Determine if we should include the header when calculating row indices
+                        include_header = task_config.get('include_header', True)
+                        start_row = int(start_cell[1:]) if start_cell[1:].isdigit() else 1
+                        
+                        def create_python_formula_function(code_text, dataframe):
+                            # Create a code object from the Python text
+                            code = compile(code_text, "<string>", "eval")
+                            
+                            # Return a function that will be called for each row
+                            def python_formula_wrapper(sheet_row):
+                                try:
+                                    # Calculate the DataFrame index
+                                    # If sheet_row is 2 and start_row is 2 and include_header is False,
+                                    # then df_idx is 0 (first row of DataFrame)
+                                    df_idx = sheet_row - start_row - (1 if include_header else 0)
+                                    
+                                    if df_idx < 0 or df_idx >= len(dataframe):
+                                        return f"ERROR: Row index {df_idx} out of bounds"
+                                    
+                                    # Get the data for this row
+                                    row_data = dataframe.iloc[df_idx]
+                                    
+                                    # Set up the globals for the evaluation
+                                    globals_dict = {
+                                        'datetime': datetime,
+                                        'timedelta': timedelta,
+                                        'row': row_data,
+                                        'idx': sheet_row,
+                                        'df': dataframe,
+                                        'df_idx': df_idx
+                                    }
+                                    
+                                    # Execute the code with access to these globals
+                                    result = eval(code, globals_dict)
+                                    return str(result)
+                                except Exception as e:
+                                    logger.error(f"Error executing Python formula for row {sheet_row}: {e}")
+                                    return f"ERROR: {str(e)}"
+                            
+                            return python_formula_wrapper
+                        
+                        # Create the formula function
+                        formula = create_python_formula_function(formula_text, df)
+                        
+                    except Exception as e:
+                        logger.error(f"Error compiling Python formula: {e}")
+                        formula = None
+                else:
+                    logger.warning(f"Unknown formula type: {formula_type}")
+                    formula = None
+            
             # Update Google Sheet
             update_google_sheet(
                 spreadsheet_id=spreadsheet_id,
@@ -484,7 +583,9 @@ def update_all_sheets(config):
                 df=df,
                 start_cell=start_cell,
                 include_header=task_config.get('include_header', True),
-                handle_existing_filters=task_config.get('handle_existing_filters', False)
+                handle_existing_filters=task_config.get('handle_existing_filters', False),
+                formula=formula,
+                formula_position=formula_position
             )
             
             logger.info(f"Successfully updated {task_name}")
@@ -501,6 +602,7 @@ def main():
     parser = argparse.ArgumentParser(description='Update Google Sheets with Bittensor data')
     parser.add_argument('--config', type=str, default='.sheets_config.json', help='Path to configuration file')
     parser.add_argument('--check-auth', action='store_true', help='Check Google Sheets authentication')
+    parser.add_argument('--function', type=str, help='Run a specific function exclusively (e.g., wallet_balance)')
     args = parser.parse_args()
     
     # Check authentication if requested
@@ -529,6 +631,11 @@ def main():
                 "start_cell": "A1",
                 "include_header": True,
                 "handle_existing_filters": False,
+                "formula": {
+                    "type": "formula",
+                    "text": "=SUM(D{0}+E{0})",
+                    "position": -1
+                },
                 "params": {}
             },
             "subnet_list": {
@@ -545,9 +652,14 @@ def main():
                 "sheet_name": "Metagraph_SN1",
                 "start_cell": "A1",
                 "include_header": True,
+                "formula": {
+                    "type": "python",
+                    "text": "\"Active\" if row[\"TRUST\"] > 0 else \"Inactive\"",
+                    "position": -1
+                },
                 "params": {
-                    "netuid": "1",
-                    "egrep": []
+                    "netuids": "1",
+                    "egrep_keys": []
                 }
             }
         }
@@ -559,8 +671,8 @@ def main():
         logger.info("Please edit this file with your Google Sheets information and run again.")
         return 1
     
-    # Update all sheets
-    results = update_all_sheets(config)
+    # Update all sheets or specific function
+    results = update_all_sheets(config, args.function)
     
     # Check results
     success = all(results.values())

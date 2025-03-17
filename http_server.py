@@ -18,7 +18,7 @@ subprocess.run(["python3", "-m", "pip", "install", "portalocker"], stdout=subpro
 import portalocker
 import requests
 from dotenv import load_dotenv
-from subnet_info import get_subnet_info
+from utils.subnet_info import get_subnet_info
 
 
 BLOCK_TIME = 12

@@ -1,0 +1,72 @@
+{
+  "wallet_balance": {
+    "data_type": "wallet_balance",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "WalletBalance",
+    "start_cell": "A1",
+    "include_header": true,
+    "handle_existing_filters": false,
+    "params": {}
+  },
+  "subnet_list": {
+    "data_type": "subnet_list",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "SubnetList",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {}
+  },
+  "metagraph_sn1": {
+    "data_type": "metagraph",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "Metagraph_SN1",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {
+      "netuid": "1",
+      "egrep": []
+    }
+  },
+  "metagraph_sn19": {
+    "data_type": "metagraph",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "Metagraph_SN19",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {
+      "netuid": "19",
+      "egrep": []
+    }
+  },
+  "registrations": {
+    "data_type": "registrations",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "Registrations",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {}
+  },
+  "sn19_metrics": {
+    "data_type": "sn19_metrics",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "SN19_Metrics",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {
+      "fetchFileDate": "latest",
+      "dateFrom": "2023-07-01",
+      "dateTo": "2023-07-31",
+      "dataSource": "miner-scores"
+    }
+  },
+  "sn19_recent": {
+    "data_type": "sn19_recent",
+    "spreadsheet_id": "YOUR_SPREADSHEET_ID",
+    "sheet_name": "SN19_Recent",
+    "start_cell": "A1",
+    "include_header": true,
+    "params": {
+      "hours": 72
+    }
+  }
+} 

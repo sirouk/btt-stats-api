@@ -4,3 +4,7 @@ bittensor==9.0.0
 bittensor-cli==9.0.1
 bittensor-commit-reveal==0.2.0
 bittensor-wallet==3.0.3
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client

@@ -19,3 +19,5 @@ btt_unstake_*.log
 *.pyc
 __pycache__/*
 *.log
+.sheets_config.json
+service-account.json

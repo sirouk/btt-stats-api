@@ -420,23 +420,23 @@ def get_sn19_recent_data(hist_hours=72):
     
     return filtered_df
 
-def update_all_sheets(config, function_filter=None):
+def update_all_sheets(config, task_name=None):
     """Update all Google Sheets with data from various sources
     
     Args:
         config: Dictionary with configuration for all tasks
-        function_filter: Optional string with task name to run exclusively
+        task_name: Optional string with task name to run exclusively
     """
     results = {}
     
-    # Filter configuration if specific function is requested
-    if function_filter:
-        if function_filter in config:
-            config = {function_filter: config[function_filter]}
-            logger.info(f"Running only function: {function_filter}")
+    # Filter configuration if specific task is requested
+    if task_name:
+        if task_name in config:
+            config = {task_name: config[task_name]}
+            logger.info(f"Running only task: {task_name}")
         else:
-            logger.error(f"Function '{function_filter}' not found in configuration!")
-            return {function_filter: False}
+            logger.error(f"Task '{task_name}' not found in configuration!")
+            return {task_name: False}
     
     for task_name, task_config in config.items():
         logger.info(f"Processing task: {task_name}")
@@ -518,34 +518,52 @@ def update_all_sheets(config, function_filter=None):
                     formula = formula_text
                 elif formula_type == 'python':
                     # Python code to execute for each row
-                    # This is advanced functionality that executes Python code
-                    # A lambda will be created that takes row data and returns a value
                     try:
-                        # Create a safe function from the python code
-                        # The function will receive both row data and idx as parameters
-                        # We'll create a closure that captures the DataFrame
+                        # First, check if this is a simple formula that doesn't use row data
+                        is_simple_formula = 'row' not in formula_text and 'df' not in formula_text and 'df_idx' not in formula_text
                         
-                        # Determine if we should include the header when calculating row indices
-                        include_header = task_config.get('include_header', True)
-                        start_row = int(start_cell[1:]) if start_cell[1:].isdigit() else 1
-                        
-                        def create_python_formula_function(code_text, dataframe):
+                        # For simple formulas that don't reference row data (especially timestamps), 
+                        # just evaluate once and use the same value for all rows
+                        if is_simple_formula:
+                            logger.info(f"Using simple Python formula evaluation for '{formula_text}'")
+                            
+                            # Set up globals with just datetime and timedelta
+                            globals_dict = {
+                                'datetime': datetime,
+                                'timedelta': timedelta
+                            }
+                            
+                            # Evaluate the formula once
+                            result = eval(formula_text, globals_dict)
+                            static_result = str(result)
+                            
+                            # Return a function that always returns this value
+                            formula = lambda _: static_result
+                        else:
+                            # For more complex formulas that need row data, use the original approach
+                            logger.info(f"Using row-dependent Python formula for '{formula_text}'")
+                            
                             # Create a code object from the Python text
-                            code = compile(code_text, "<string>", "eval")
+                            code = compile(formula_text, "<string>", "eval")
+                            
+                            # Determine if we should include the header when calculating row indices
+                            include_header = task_config.get('include_header', True)
+                            start_row = int(start_cell[1:]) if start_cell[1:].isdigit() else 1
                             
                             # Return a function that will be called for each row
                             def python_formula_wrapper(sheet_row):
                                 try:
-                                    # Calculate the DataFrame index
-                                    # If sheet_row is 2 and start_row is 2 and include_header is False,
-                                    # then df_idx is 0 (first row of DataFrame)
-                                    df_idx = sheet_row - start_row - (1 if include_header else 0)
-                                    
-                                    if df_idx < 0 or df_idx >= len(dataframe):
-                                        return f"ERROR: Row index {df_idx} out of bounds"
+                                    # Calculate the DataFrame index from the local data position
+                                    # In append mode with high row numbers, use a simple relative offset
+                                    relative_idx = sheet_row - start_row
+                                    if include_header and relative_idx > 0:
+                                        relative_idx -= 1
+                                        
+                                    if relative_idx < 0 or relative_idx >= len(df):
+                                        return f"ERROR: Index {relative_idx} out of bounds (max={len(df)-1})"
                                     
                                     # Get the data for this row
-                                    row_data = dataframe.iloc[df_idx]
+                                    row_data = df.iloc[relative_idx]
                                     
                                     # Set up the globals for the evaluation
                                     globals_dict = {
@@ -553,22 +571,17 @@ def update_all_sheets(config, function_filter=None):
                                         'timedelta': timedelta,
                                         'row': row_data,
                                         'idx': sheet_row,
-                                        'df': dataframe,
-                                        'df_idx': df_idx
+                                        'df': df
                                     }
                                     
                                     # Execute the code with access to these globals
                                     result = eval(code, globals_dict)
                                     return str(result)
                                 except Exception as e:
-                                    logger.error(f"Error executing Python formula for row {sheet_row}: {e}")
+                                    logger.error(f"Error executing formula: {e}")
                                     return f"ERROR: {str(e)}"
                             
-                            return python_formula_wrapper
-                        
-                        # Create the formula function
-                        formula = create_python_formula_function(formula_text, df)
-                        
+                            formula = python_formula_wrapper
                     except Exception as e:
                         logger.error(f"Error compiling Python formula: {e}")
                         formula = None
@@ -608,8 +621,17 @@ def main():
     parser = argparse.ArgumentParser(description='Update Google Sheets with Bittensor data')
     parser.add_argument('--config', type=str, default='.sheets_config.json', help='Path to configuration file')
     parser.add_argument('--check-auth', action='store_true', help='Check Google Sheets authentication')
-    parser.add_argument('--function', type=str, help='Run a specific function exclusively (e.g., wallet_balance)')
+    parser.add_argument('--task', type=str, help='Run a specific task exclusively (e.g., wallet_balance)')
+    
+    # For backward compatibility
+    parser.add_argument('--function', type=str, help='[DEPRECATED] Please use --task instead')
+    
     args = parser.parse_args()
+    
+    # Handle deprecated --function parameter
+    if args.function and not args.task:
+        logger.warning("The --function parameter is deprecated. Please use --task instead.")
+        args.task = args.function
     
     # Check authentication if requested
     if args.check_auth:
@@ -680,7 +702,7 @@ def main():
     
     # Function to run one iteration of updates
     def run_updates(config):
-        results = update_all_sheets(config, args.function)
+        results = update_all_sheets(config, args.task)
         success = all(results.values())
         if success:
             logger.info("All sheets updated successfully!")
@@ -693,8 +715,8 @@ def main():
     if config is None:
         return 1
     
-    # If a specific function is specified, run once and exit
-    if args.function:
+    # If a specific task is specified, run once and exit
+    if args.task:
         success = run_updates(config)
         return 0 if success else 1
     

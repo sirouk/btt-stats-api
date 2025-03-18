@@ -81,7 +81,7 @@ rm -rf .venv
 Verify that your Google Sheets authentication is set up correctly:
 
 ```bash
-python utils/google_sheets.py
+python3 utils/google_sheets.py
 ```
 
 A successful authentication will show:
@@ -132,7 +132,7 @@ cp .sheets_config.json.example .sheets_config.json
 First, verify that your Google Sheets authentication is working:
 
 ```bash
-python btt_to_sheets.py --check-auth
+python3 btt_to_sheets.py --check-auth
 ```
 
 If successful, you'll see "Google Sheets authentication successful!"
@@ -142,13 +142,13 @@ If successful, you'll see "Google Sheets authentication successful!"
 Run the script to update all configured sheets:
 
 ```bash
-python btt_to_sheets.py
+python3 btt_to_sheets.py
 ```
 
 You can specify a different configuration file:
 
 ```bash
-python btt_to_sheets.py --config my_custom_config.json
+python3 btt_to_sheets.py --config my_custom_config.json
 ```
 
 ### Run a Specific Task Only
@@ -156,7 +156,7 @@ python btt_to_sheets.py --config my_custom_config.json
 To run only one specific task from your configuration:
 
 ```bash
-python btt_to_sheets.py --task wallet_balance
+python3 btt_to_sheets.py --task wallet_balance
 ```
 
 This will only process the "wallet_balance" entry from your configuration file, ignoring all others.

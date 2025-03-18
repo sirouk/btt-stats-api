@@ -1,5 +1,6 @@
 pexpect
 python-dotenv
+pandas
 bittensor==9.0.0
 bittensor-cli==9.0.1
 bittensor-commit-reveal==0.2.0

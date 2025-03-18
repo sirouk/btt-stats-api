@@ -6,63 +6,29 @@ A comprehensive toolset for extracting, visualizing, and analyzing Bittensor blo
 
 This repository provides two different approaches to managing Bittensor stats:
 
-1. **Google Sheets Integration** (Recommended): Automatically export Bittensor data directly to Google Sheets for easy visualization and analysis.
+1. **Google Sheets Integration** (Recommended): Automatically export Bittensor data directly to Google Sheets for easy visualization and analysis. See [Google Sheets Integration Guide](SHEETS-README.md) for setup and configuration instructions.
 
-2. **HTTP API Server**: A lightweight web server that provides endpoints with Bittensor data in CSV format for custom integrations.
+2. **HTTP API Server**: A lightweight web server that provides endpoints with Bittensor data in CSV format for custom integrations. See [HTTP API Documentation](API-README.md) for endpoint details and usage examples.
 
-## Quick Start
+## Available Data and Features
 
-### Google Sheets Integration (Recommended)
-
-```bash
-# Set up Python virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install required packages
-pip install pandas bittensor pexpect requests python-dotenv portalocker google-auth google-api-python-client
-
-# Set up Google Sheets API credentials
-# (See SHEETS-README.md for detailed instructions)
-
-# Configure your Google Sheets connection
-cp .sheets_config.json.example .sheets_config.json
-# Edit .sheets_config.json with your spreadsheet details
-
-# Run the integration
-python btt_to_sheets.py
-```
-
-### HTTP API Server
-
-```bash
-# Set up Python virtual environment
-python3 -m venv .venv
-source .venv/bin/activate
-
-# Install required packages
-pip install pandas bittensor pexpect requests python-dotenv portalocker
-
-# Start the API server
-python http_server.py
-# Server runs on port 41337 by default
-```
-
-## Features
+Both methods provide access to comprehensive Bittensor data:
 
 - **Wallet Balance Tracking**: Monitor TAO balances across all coldkeys
-- **Subnet Information**: Detailed view of all subnets
-- **Metagraph Data**: Complete neuron data including stake, trust, and rewards
+- **Subnet Information**: Detailed view of all subnets with network weights and emission values
+- **Metagraph Data**: Complete neuron data including:
+  - Stakes (both TAO and Alpha)
+  - Trust and consensus scores
+  - Incentive and dividends
+  - Daily reward calculations
+  - Validator metrics
+  - Immunity periods
 - **Registration History**: Track registration attempts and costs
-- **Subnet 19 (TauVision) Metrics**: Specialized data for SN19 miners
+- **Subnet 19 (TauVision) Metrics**: Specialized data for SN19 miners including:
+  - Performance scores
+  - Task requests and volume
+  - Validator interactions
 - **Price Data**: Current TAO price from exchanges
-
-## Detailed Documentation
-
-For comprehensive setup and usage instructions, see:
-
-- [Google Sheets Integration Guide](SHEETS-README.md) - Complete guide to setting up and using the Google Sheets integration
-- [HTTP API Documentation](API-README.md) - Details on using the HTTP API endpoints
 
 ## Which Method Should I Use?
 
@@ -71,11 +37,13 @@ For comprehensive setup and usage instructions, see:
   - Scheduled automatic updates
   - Data organization across multiple sheets
   - No need to run a server continuously
+  - Historical data tracking with append mode
 
 - **HTTP API Server** is better for:
   - Custom applications needing raw data
   - Integration with other systems via HTTP
   - Programmatic access to Bittensor data
+  - Real-time data requests
 
 We recommend the Google Sheets approach for most use cases, as it provides better visualization options and easier setup.
 

@@ -2,15 +2,20 @@
 .env
 .venv/*
 
-./cache_**
-./cache_*
-cache_**
-cache_*
+# Ignore cache files but keep the directory
+cache/*
+!cache/.gitkeep
 
-./last_**
-./last_*
-last_**
-last_*
+# Remove old cache pattern entries
+# ./cache_**
+# ./cache_*
+# cache_**
+# cache_*
+
+# ./last_**
+# ./last_*
+# last_**
+# last_*
 
 ./btt_unstake_**.log
 ./btt_unstake_*.log

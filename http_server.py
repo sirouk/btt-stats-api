@@ -26,6 +26,7 @@ PORT = 41337
 subtensor_address = "127.0.0.1:9944"
 CACHE_DURATION = timedelta(minutes=3)  # Cache freshness duration
 CACHE_KEEP_ALIVE_INTERVAL = 10  # Cache check interval in seconds, adjusted here
+CACHE_DIR = "cache"  # Directory to store cache files
 CACHE_FILE = "cache_state.json"
 PATHS_TO_SKIP = {'/favicon.ico'} # avoid these paths
 CACHE_DISABLED_PATHS = ['/sn19_metrics','/sn19_recent']  # Paths with caching disabled
@@ -35,6 +36,9 @@ load_dotenv()
 
 # Get hotkeys from environment variable
 HOTKEYS = os.getenv('HOTKEYS', '').split(',')
+
+# Ensure cache directory exists
+os.makedirs(CACHE_DIR, exist_ok=True)
 
 
 class Server(socketserver.TCPServer):
@@ -498,8 +502,8 @@ class CommandHandler(http.server.SimpleHTTPRequestHandler):
         # Handle w/cache
         current_time = datetime.now()
         hash_key = get_hash_key(path, query_params)
-        file_name = f"cache_{hash_key}.csv"
-        last_req_file = f"last_{hash_key}.json"
+        file_name = os.path.join(CACHE_DIR, f"cache_{hash_key}.csv")
+        last_req_file = os.path.join(CACHE_DIR, f"last_{hash_key}.json")
 
         try:
             # Use a context manager to handle the file with the lock
@@ -538,15 +542,16 @@ def refresh_cache_file(path, query_params, file_name):
 def continuously_update_cache():
     while True:
         try:
-            last_files = [f for f in os.listdir('.') if f.startswith('last_')]
+            last_files = [f for f in os.listdir(CACHE_DIR) if f.startswith('last_')]
             for last_file in last_files:
-                with open(last_file, 'r', encoding='utf-8', errors='replace') as file:
+                last_file_path = os.path.join(CACHE_DIR, last_file)
+                with open(last_file_path, 'r', encoding='utf-8', errors='replace') as file:
                     data = json.load(file)
                 
                 path = data['path']
                 query_params = data['query_params']
                 hash_key = get_hash_key(path, query_params)
-                file_name = f"cache_{hash_key}.csv"
+                file_name = os.path.join(CACHE_DIR, f"cache_{hash_key}.csv")
 
                 try:
                     # Check if the file exists and its modification time

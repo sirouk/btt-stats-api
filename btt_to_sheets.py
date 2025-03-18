@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-import http.server
-import socketserver
 from urllib.parse import urlparse, parse_qs
 import pexpect
 import re
@@ -11,11 +9,8 @@ from io import StringIO
 import bittensor as bt
 from datetime import datetime, timedelta
 import os
-import hashlib
-import threading
 import time
 import json
-import portalocker
 import requests
 from dotenv import load_dotenv
 import logging

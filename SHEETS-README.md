@@ -13,27 +13,60 @@ The Google Sheets integration (`btt_to_sheets.py`) automatically exports Bittens
 
 ## Prerequisites
 
-- Python 3.7 or higher
+- Python 3.11 or higher
 - A Google Cloud Platform account with Google Sheets API enabled
 - A service account with access to Google Sheets
 
-## Installation
+## Setup Steps
 
-1. Install required packages:
+### 1. Installation Requirements
 
-```bash
-pip install pandas bittensor pexpect requests python-dotenv portalocker google-auth google-api-python-client
-```
-
-2. Set up Google Sheets API:
+The btt-stats-api requires Python 3.11+ and some system dependencies:
 
 ```bash
-# Clone or download the repository
-git clone https://github.com/yourusername/btt-stats-api.git
-cd btt-stats-api
+# Install python 3.11
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install -y python3.11 python3.11-venv
+
+# Install PM2 if not already installed
+if command -v pm2 &> /dev/null
+then
+    pm2 startup && pm2 save --force
+else
+    sudo apt install npm -y
+    sudo npm install pm2 -g && pm2 update
+    npm install pm2@latest -g && pm2 update && pm2 save --force && pm2 startup && pm2 save
+fi
 ```
 
-## Google Sheets API Setup
+Then clone the repository:
+
+```bash
+cd $HOME
+git clone https://github.com/sirouk/btt-stats-api
+cd ./btt-stats-api
+```
+
+### 2. Setting Up Python Environment
+
+Create a Python virtual environment and install the required dependencies:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+If you need to cleanup and reinstall the environment:
+
+```bash
+cd $HOME/btt-stats-api
+deactivate
+rm -rf .venv
+```
+
+### 3. Google Sheets API Setup
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
@@ -43,7 +76,7 @@ cd btt-stats-api
 6. Save the downloaded JSON file as `service-account.json` in the root directory of this project
 7. Share your Google Sheets with the service account email address (found in the JSON file)
 
-### Testing Google Sheets Authentication
+#### Testing Google Sheets Authentication
 
 Verify that your Google Sheets authentication is set up correctly:
 
@@ -60,7 +93,7 @@ Make sure to share your Google Sheets with this email address.
 Authentication successful!
 ```
 
-### Setting Up Sheet Permissions
+#### Setting Up Sheet Permissions
 
 To allow the script to write to your Google Sheets:
 
@@ -79,7 +112,7 @@ If your sheet has protection rules:
 
 Without proper permissions, the script will fail with access errors when trying to update protected ranges.
 
-## Configuration
+### 4. Configuration
 
 1. Copy the example configuration file:
 
@@ -129,53 +162,6 @@ python btt_to_sheets.py --task wallet_balance
 This will only process the "wallet_balance" entry from your configuration file, ignoring all others.
 
 ## Setting Up Scheduled Updates
-
-### Installation Requirements
-
-The btt-stats-api requires Python 3.11+ and some system dependencies:
-
-```bash
-# Install python 3.11
-sudo add-apt-repository ppa:deadsnakes/ppa
-sudo apt update
-sudo apt install -y python3.11 python3.11-venv
-
-# Install PM2 if not already installed
-if command -v pm2 &> /dev/null
-then
-    pm2 startup && pm2 save --force
-else
-    sudo apt install npm -y
-    sudo npm install pm2 -g && pm2 update
-    npm install pm2@latest -g && pm2 update && pm2 save --force && pm2 startup && pm2 save
-fi
-```
-
-Then clone the repository:
-
-```bash
-cd $HOME
-git clone https://github.com/sirouk/btt-stats-api
-cd ./btt-stats-api
-```
-
-### Setting Up Python Environment
-
-Create a Python virtual environment and install the required dependencies:
-
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-```
-
-If you need to cleanup and reinstall the environment:
-
-```bash
-cd $HOME/btt-stats-api
-deactivate
-rm -rf .venv
-```
 
 ### Setting up PM2 Service
 

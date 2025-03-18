@@ -15,6 +15,10 @@ This repository provides two different approaches to managing Bittensor stats:
 ### Google Sheets Integration (Recommended)
 
 ```bash
+# Set up Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
 # Install required packages
 pip install pandas bittensor pexpect requests python-dotenv portalocker google-auth google-api-python-client
 
@@ -32,6 +36,10 @@ python btt_to_sheets.py
 ### HTTP API Server
 
 ```bash
+# Set up Python virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
 # Install required packages
 pip install pandas bittensor pexpect requests python-dotenv portalocker
 

@@ -130,61 +130,116 @@ This will only process the "wallet_balance" entry from your configuration file, 
 
 ## Setting Up Scheduled Updates
 
-### Basic Hourly Update
+### Installation Requirements
 
-To update your Google Sheets every hour:
-
-```bash
-crontab -e
-```
-
-Add the following line:
-```
-0 * * * * cd /path/to/btt-stats-api && python btt_to_sheets.py >> btt_sheets_cron.log 2>&1
-```
-
-### Multiple Update Schedules
-
-You can set up different update frequencies for different configurations:
-
-```
-# Update wallet balance every 30 minutes
-*/30 * * * * cd /path/to/btt-stats-api && python btt_to_sheets.py --task wallet_balance >> wallet_cron.log 2>&1
-
-# Update metagraph data every 4 hours
-0 */4 * * * cd /path/to/btt-stats-api && python btt_to_sheets.py --task metagraph_sn1 >> metagraph_cron.log 2>&1
-```
-
-### Verifying Cron is Working
-
-Check if your cron jobs are scheduled:
-```bash
-crontab -l
-```
-
-To view logs for debugging:
-```bash
-tail -f btt_sheets_cron.log
-```
-
-### Log Rotation
-
-For log management on long-running systems:
+The btt-stats-api requires Python 3.11+ and some system dependencies:
 
 ```bash
-# Install logrotate if not already installed
-apt-get install logrotate
+# Install python 3.11
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install -y python3.11 python3.11-venv
 
-# Create a logrotate configuration
-cat > /etc/logrotate.d/btt-sheets << EOF
-/path/to/btt-stats-api/*.log {
-    daily
-    rotate 7
-    compress
-    missingok
-    notifempty
-}
-EOF
+# Install PM2 if not already installed
+if command -v pm2 &> /dev/null
+then
+    pm2 startup && pm2 save --force
+else
+    sudo apt install npm -y
+    sudo npm install pm2 -g && pm2 update
+    npm install pm2@latest -g && pm2 update && pm2 save --force && pm2 startup && pm2 save
+fi
+```
+
+Then clone the repository:
+
+```bash
+cd $HOME
+git clone https://github.com/sirouk/btt-stats-api
+cd ./btt-stats-api
+```
+
+### Setting Up Python Environment
+
+Create a Python virtual environment and install the required dependencies:
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+If you need to cleanup and reinstall the environment:
+
+```bash
+cd $HOME/btt-stats-api
+deactivate
+rm -rf .venv
+```
+
+### Setting up PM2 Service
+
+After configuring your `.sheets_config.json` file, set up the btt-stats-api as a PM2 service:
+
+```bash
+cd $HOME/btt-stats-api
+
+# Activate the virtual environment first (this needs to be done before each PM2 command)
+source .venv/bin/activate
+
+# Start the service with PM2 (main service for all tasks)
+pm2 start btt_to_sheets.py --name btt-to-sheets --interpreter python3
+
+# Optional: Set up specific tasks for different update frequencies
+pm2 start btt_to_sheets.py --name btt-wallet-balance --interpreter python3 -- --task wallet_balance
+pm2 start btt_to_sheets.py --name btt-metagraph --interpreter python3 -- --task metagraph
+
+# Ensure PM2 starts on system boot
+pm2 save && pm2 startup
+```
+
+### PM2 Log Management
+
+Set up automatic log rotation to prevent logs from consuming too much disk space:
+
+```bash
+# Install pm2-logrotate module if not already installed
+pm2 install pm2-logrotate
+
+# Set maximum size of logs to 50M before rotation
+pm2 set pm2-logrotate:max_size 50M
+
+# Retain 10 rotated log files
+pm2 set pm2-logrotate:retain 10
+
+# Enable compression of rotated logs
+pm2 set pm2-logrotate:compress true
+
+# Set rotation interval to every day
+pm2 set pm2-logrotate:rotateInterval '0 0 * * *'
+```
+
+### Useful PM2 Commands
+
+```bash
+# View logs
+pm2 logs                      # View all logs
+pm2 logs btt-to-sheets        # View main service logs
+pm2 logs btt-wallet-balance   # View wallet balance task logs
+
+# Monitor processes
+pm2 monit
+
+# Restart services
+pm2 restart all               # Restart all services
+pm2 restart btt-to-sheets     # Restart main service
+
+# Stop services
+pm2 stop all                  # Stop all services
+pm2 stop btt-to-sheets        # Stop main service
+
+# Check status
+pm2 status                    # Check status of all services
 ```
 
 ## Configuration Options

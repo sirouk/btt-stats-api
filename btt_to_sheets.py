@@ -342,7 +342,7 @@ def get_registrations_data():
     df = df.sort_values(by=['Timestamp', 'Subnet', 'ColdKey', 'HotKey', 'Line'], ascending=[False, True, True, True, False])
     return df
 
-def get_sn19_metrics_data(fetch_file_date, date_from, date_to, data_source):
+def get_sn19_metrics_data(fetch_file_date, date_from, date_to, data_source, egrep_keys=None):
     """Get SN19 metrics data"""
     # Construct the URL to fetch the CSV file
     csv_url = f"https://data.tauvision.ai/{fetch_file_date}_{data_source}.csv"
@@ -374,8 +374,17 @@ def get_sn19_metrics_data(fetch_file_date, date_from, date_to, data_source):
     # Filter the DataFrame by the date range
     filtered_df = df[(df['created_at'] >= date_from) & (df['created_at'] <= date_to)]
 
+    # Determine which hotkeys to use
+    hotkeys_to_use = egrep_keys if egrep_keys else HOTKEYS
+    
+    # Convert to list if it's a string
+    if isinstance(hotkeys_to_use, str):
+        hotkeys_to_use = hotkeys_to_use.split(',')
+        
+    logger.info(f"Filtering SN19 metrics by {len(hotkeys_to_use)} hotkeys")
+    
     # Filter the DataFrame to include only the specified hotkeys
-    filtered_df = filtered_df[filtered_df['miner_hotkey'].isin(HOTKEYS)]
+    filtered_df = filtered_df[filtered_df['miner_hotkey'].isin(hotkeys_to_use)]
 
     # Select only the required columns
     columns = ['id', 'axon_uid', 'miner_hotkey', 'validator_hotkey', 'task', 'declared_volume', 'consumed_volume', 
@@ -550,7 +559,7 @@ def update_all_sheets(config, task_name=None):
                 date_to = params.get('dateTo')
                 data_source = params.get('dataSource')
                 if all([fetch_file_date, date_from, date_to, data_source]):
-                    df = get_sn19_metrics_data(fetch_file_date, date_from, date_to, data_source)
+                    df = get_sn19_metrics_data(fetch_file_date, date_from, date_to, data_source, params.get('egrep_keys'))
                 else:
                     logger.error(f"Missing required parameters for sn19_metrics")
                     results[task_name] = False

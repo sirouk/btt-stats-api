@@ -152,7 +152,8 @@
       "fetchFileDate": "latest",
       "dateFrom": "2023-07-01",
       "dateTo": "2023-07-31",
-      "dataSource": "miner-scores"
+      "dataSource": "miner-scores",
+      "egrep_keys": "5C...,5F...,5D..."
     }
   },
   "sn19_recent": {

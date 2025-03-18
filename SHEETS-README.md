@@ -92,12 +92,6 @@ cp .sheets_config.json.example .sheets_config.json
    - Configure sheet names and other parameters as needed
    - You can remove any sections you don't need
 
-3. For SN19 specific features, add your hotkeys to a .env file:
-
-```bash
-echo 'HOTKEYS=your_hotkey1,your_hotkey2' > .env
-```
-
 ## Usage
 
 ### Check Authentication
@@ -326,7 +320,7 @@ In this example:
   - Parameters: `netuids` (comma-separated subnet IDs), `egrep_keys` (filter by hotkeys)
 - `registrations`: Recent registration history
 - `sn19_metrics`: Subnet 19 (TauVision) metrics
-  - Parameters: `fetchFileDate`, `dateFrom`, `dateTo`, `dataSource`
+  - Parameters: `fetchFileDate`, `dateFrom`, `dateTo`, `dataSource`, `egrep_keys` (filter by hotkeys, comma-separated)
 - `sn19_recent`: Recent Subnet 19 activities
   - Parameters: `hours` (history timeframe)
 - `asset_price`: Current price of TAO
@@ -347,4 +341,3 @@ If you encounter issues:
 3. Verify that the subtensor node is accessible at the configured address (default: 127.0.0.1:9944)
 4. Check that the subnet IDs specified in your configuration exist
 5. Ensure the service account has permission to access protected ranges in your sheets
-6. Verify your `.env` file if using SN19-specific features 

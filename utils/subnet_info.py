@@ -3,6 +3,7 @@ import pandas as pd
 import websockets
 import asyncio
 import json
+import time
 
 def little_endian_hex_to_int(hex_str):
     # Remove '0x' prefix if present
@@ -18,40 +19,35 @@ def little_endian_hex_to_int(hex_str):
     # Convert bytes to integer
     return int.from_bytes(reversed_bytes, byteorder='big')
 
-async def get_burn_regs(netuid, chain_endpoint):
+async def get_burn_regs(netuid, ws):
     subnet_hex = hex(netuid)[2:].zfill(2)
-    async with websockets.connect(
-        chain_endpoint, ping_interval=None
-    ) as ws:
-        await ws.send(json.dumps(
-            {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "state_subscribeStorage",
-                "params": [[f"0x658faa385070e074c85bf6b568cf055501be1755d08418802946bca51b686325{subnet_hex}00"]],
-            }
-        ))
-        # Ignore the first confirmation response
-        await ws.recv()
-        response = await ws.recv()
-        full_response = json.loads(response)
-        changes_list = full_response["params"]["result"]["changes"]
+    await ws.send(json.dumps(
+        {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "state_subscribeStorage",
+            "params": [[f"0x658faa385070e074c85bf6b568cf055501be1755d08418802946bca51b686325{subnet_hex}00"]],
+        }
+    ))
+    # Ignore the first confirmation response
+    await ws.recv()
+    response = await ws.recv()
+    full_response = json.loads(response)
+    changes_list = full_response["params"]["result"]["changes"]
 
-        # disconnect the websocket
-        await ws.close()
-
-        # Extract and convert the little-endian hex value to an integer
-        for changes in changes_list:
-            key_hex, value_hex = changes
-            int_value = little_endian_hex_to_int(value_hex)
-            return int_value
+    # Extract and convert the little-endian hex value to an integer
+    for changes in changes_list:
+        key_hex, value_hex = changes
+        int_value = little_endian_hex_to_int(value_hex)
+        return int_value
 
 async def fetch_subnet_info(subtensor_address):
-    chain_endpoint = f"ws://{subtensor_address}"
+    chain_endpoint = f"{subtensor_address}"
     subtensor = None
+    ws = None
     try:
         # Initialize the Subtensor connection
-        subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
+        subtensor = bt.subtensor(network=f"{subtensor_address}")
 
         # Initialize a list to collect subnet data
         subnets_data = []
@@ -62,7 +58,10 @@ async def fetch_subnet_info(subtensor_address):
         
         # Calculate total emission value across all subnets
         total_emission = 1
-        
+
+        # Establish websocket connection once
+        ws = await websockets.connect(chain_endpoint, ping_interval=None)
+
         for netuid, subnet in all_sn_dynamic_info.items():
             if subnet is None:
                 continue
@@ -76,7 +75,8 @@ async def fetch_subnet_info(subtensor_address):
             subnet_hyperparams = subtensor.get_subnet_hyperparameters(netuid)
 
             # get the recycle/burn
-            burn = await get_burn_regs(netuid, chain_endpoint)
+            #time.sleep(2) # temporary to avoid 429 on finney
+            burn = await get_burn_regs(netuid, ws)
             
             data = {
                 'NETUID': subnet.netuid,
@@ -97,6 +97,11 @@ async def fetch_subnet_info(subtensor_address):
         subnet_df = subnet_df.sort_values('EMISSION', ascending=False)
         return subnet_df
     finally:
+        if ws is not None:
+            try:
+                await ws.close()
+            except:
+                pass  # Ignore any errors during close
         if subtensor and hasattr(subtensor, 'close'):
             try:
                 subtensor.close()
@@ -108,7 +113,8 @@ def get_subnet_info(subtensor_address):
 
 if __name__ == "__main__":
     # Define the Subtensor network address
-    subtensor_address = "127.0.0.1:9944"
+    #subtensor_address = "ws://127.0.0.1:9944"
+    subtensor_address = "wss://entrypoint-finney.opentensor.ai:443"
 
     data = get_subnet_info(subtensor_address)
     print(data[['NETUID', 'N', 'MAX_N', 'EMISSION', 'TEMPO', 'BURN', 'POW', 'SUDO', 'WEIGHT', 'ALPHA_PRICE']])

@@ -30,7 +30,8 @@ logger = logging.getLogger('btt_to_sheets')
 
 # Constants
 BLOCK_TIME = 12
-subtensor_address = "127.0.0.1:9944"
+#subtensor_address = "ws://127.0.0.1:9944"
+subtensor_address = "wss://entrypoint-finney.opentensor.ai:443"
 HOTKEYS = os.getenv('HOTKEYS', '').split(',')
 
 # Load environment variables
@@ -65,7 +66,7 @@ def get_subnet_weight(subnet_id, subtensor):
 def get_wallet_balance_data():
     """Get wallet balance information"""
     # Run the subnet list command
-    command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --wallet-path ~/.bittensor/wallets/ --subtensor.chain_endpoint ws://{subtensor_address}"
+    command = f"/usr/local/bin/btcli w balance --all --subtensor.network finney --wallet-path ~/.bittensor/wallets/ --subtensor.chain_endpoint {subtensor_address}"
     child = pexpect.spawn(command, dimensions=(500, 500))
     child.expect(pexpect.EOF)
     cmd_output = child.before.decode(errors='ignore')
@@ -135,8 +136,8 @@ def get_metagraph_data(netuids, egrep_keys=None):
     # Initialize subtensor connection
     subtensor = None
     try:
-        logger.info(f"Connecting to subtensor at ws://{subtensor_address}")
-        subtensor = bt.subtensor(network=f"ws://{subtensor_address}")
+        logger.info(f"Connecting to subtensor at {subtensor_address}")
+        subtensor = bt.subtensor(network=f"{subtensor_address}")
         current_block = subtensor.get_current_block()
         logger.info(f"Connected to subtensor, current block: {current_block}")
     except Exception as e:

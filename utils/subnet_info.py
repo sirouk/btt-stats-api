@@ -41,7 +41,7 @@ async def get_burn_regs(netuid, ws):
         int_value = little_endian_hex_to_int(value_hex)
         return int_value
 
-async def fetch_subnet_info(subtensor_address):
+async def fetch_subnet_info(subtensor_address, netuids=None):
     chain_endpoint = f"{subtensor_address}"
     subtensor = None
     ws = None
@@ -55,6 +55,18 @@ async def fetch_subnet_info(subtensor_address):
         # Get all subnets info using the new method
         all_subnets = subtensor.all_subnets()
         all_sn_dynamic_info = {info.netuid: info for info in all_subnets}
+        
+        # If netuid is provided, filter to only those netuids
+        if netuids is not None:
+            if isinstance(netuids, int):
+                netuids = [netuids]
+            elif isinstance(netuids, (list, tuple, set)):
+                netuids = list(netuids)
+            else:
+                raise ValueError("netuid must be an int, list, tuple, set, or None")
+            if not (filtered := {n: all_sn_dynamic_info[n] for n in netuids if n in all_sn_dynamic_info}):
+                return pd.DataFrame()
+            all_sn_dynamic_info = filtered
         
         # Calculate total emission value across all subnets
         total_emission = 1
@@ -108,13 +120,15 @@ async def fetch_subnet_info(subtensor_address):
             except:
                 pass  # Ignore any errors during close
 
-def get_subnet_info(subtensor_address):
-    return asyncio.run(fetch_subnet_info(subtensor_address))
+def get_subnet_info(subtensor_address, netuids=None):
+    return asyncio.run(fetch_subnet_info(subtensor_address, netuids=netuids))
 
 if __name__ == "__main__":
     # Define the Subtensor network address
-    #subtensor_address = "ws://127.0.0.1:9944"
-    subtensor_address = "wss://entrypoint-finney.opentensor.ai:443"
+    subtensor_address = "ws://127.0.0.1:9944"
+    #subtensor_address = "wss://entrypoint-finney.opentensor.ai:443"
 
-    data = get_subnet_info(subtensor_address)
+    netuids_to_fetch = [8, 19, 64]
+
+    data = get_subnet_info(subtensor_address, netuids=netuids_to_fetch)
     print(data[['NETUID', 'N', 'MAX_N', 'EMISSION', 'TEMPO', 'BURN', 'POW', 'SUDO', 'WEIGHT', 'ALPHA_PRICE']])
